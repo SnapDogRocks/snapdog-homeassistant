@@ -52,8 +52,9 @@ Features in the changelog, where nobody looks for it.
 
 The tests run against a mocked `pysnapdog` (`tests/conftest.py`) and need no server. When you add
 an entity or a service, add a test for the state it shows, for each command it sends and for the
-way a refused command surfaces. Every user-facing text goes into `strings.json` and both
-translations.
+way a refused command surfaces. Every user-facing text goes into `strings.json` and every file in
+`custom_components/snapdog/translations/`. A test checks that each translation has the keys and
+placeholders of `en.json`. To add a language, copy `en.json` to `<code>.json` and translate it.
 
 ## License
 

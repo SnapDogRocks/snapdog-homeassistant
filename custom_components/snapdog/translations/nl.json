@@ -1,0 +1,40 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Verbinden met SnapDog",
+        "description": "Voer het adres van je SnapDog-server in. De API-sleutel heb je alleen nodig als je authenticatie hebt ingeschakeld in snapdog.toml.",
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "api_key": "API-sleutel",
+          "tls": "HTTPS gebruiken",
+          "verify_tls": "Certificaat controleren"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nieuwe API-sleutel invoeren",
+        "description": "De server heeft de API-sleutel geweigerd.",
+        "data": {
+          "api_key": "API-sleutel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "De SnapDog-server is niet bereikbaar.",
+      "invalid_auth": "De server heeft de API-sleutel geweigerd.",
+      "unsupported_version": "Deze SnapDog-versie is te oud. Werk de server bij naar versie 0.30.0 of nieuwer."
+    },
+    "abort": {
+      "already_configured": "Deze server is al ingesteld.",
+      "no_server_id": "De aankondiging bevat geen server-id. Voeg de server handmatig toe.",
+      "reauth_successful": "De API-sleutel is bijgewerkt."
+    }
+  },
+  "exceptions": {
+    "request_failed": {
+      "message": "De SnapDog-server heeft het verzoek geweigerd: {error}"
+    }
+  }
+}

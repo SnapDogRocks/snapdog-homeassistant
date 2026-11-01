@@ -1,0 +1,40 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Połącz z SnapDog",
+        "description": "Podaj adres swojego serwera SnapDog. Klucz API jest potrzebny tylko wtedy, gdy włączono uwierzytelnianie w snapdog.toml.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "Klucz API",
+          "tls": "Użyj HTTPS",
+          "verify_tls": "Sprawdź certyfikat"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Podaj nowy klucz API",
+        "description": "Serwer odrzucił klucz API.",
+        "data": {
+          "api_key": "Klucz API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Serwer SnapDog jest niedostępny.",
+      "invalid_auth": "Serwer odrzucił klucz API.",
+      "unsupported_version": "Ta wersja SnapDog jest zbyt stara. Zaktualizuj serwer do wersji 0.30.0 lub nowszej."
+    },
+    "abort": {
+      "already_configured": "Ten serwer jest już skonfigurowany.",
+      "no_server_id": "Ogłoszenie nie zawiera identyfikatora serwera. Dodaj serwer ręcznie.",
+      "reauth_successful": "Klucz API został zaktualizowany."
+    }
+  },
+  "exceptions": {
+    "request_failed": {
+      "message": "Serwer SnapDog odrzucił żądanie: {error}"
+    }
+  }
+}
