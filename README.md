@@ -89,7 +89,7 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🎵 **What is playing** | Title, artist, album, track, duration, position, playlist and the source (radio, Subsonic, AirPlay, Spotify, URL). |
 | ⚡ **Push, not polling** | The WebSocket delivers every change. Entities are unavailable while it is down, and the whole state is read again when it comes back. |
 | 🧠 **No guessing** | What you see is what the server reports, never what was asked for. A command shows up in the state when the server confirms it. |
-| 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese, the languages of the SnapDog web interface plus Polish and Portuguese. |
+| 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese. |
 | 🏠 **Server and zones as devices** | One device for the server, one per zone. |
 
 Planned next: clients as devices with volume, latency, zone and speaker correction, the equalizer,
