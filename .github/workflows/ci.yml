@@ -74,7 +74,9 @@ jobs:
         with:
           python-version: '3.14'
       - run: uv sync --locked
-      - run: uv audit --preview-features audit-command
+      # Pillow comes in through Home Assistant's own pin, only for the test suite, and the
+      # integration never imports it. Drop the ignore once Home Assistant allows Pillow 13.
+      - run: uv audit --preview-features audit-command --ignore GHSA-65qm-jvmh-6pqg
 
   commit-hygiene:
     name: Commit hygiene
