@@ -16,10 +16,6 @@ dev = [
     "ruff>=0.17.3",
 ]
 
-# Until pysnapdog is on PyPI the tests take it from its repository.
-[tool.uv.sources]
-pysnapdog = { git = "https://github.com/SnapDogRocks/pysnapdog" }
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

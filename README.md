@@ -26,9 +26,8 @@ Assistant shows up everywhere within a moment. It uses the client library
 
 > [!NOTE]
 > **Alpha.** The first release covers zones as media players. Clients, equalizer, sources and
-> browsing, services and diagnostics follow in the order of the plan in
-> [RFC HAI-0010](https://github.com/SnapDogRocks/snapdog/blob/main/docs/rfcs/0010-home-assistant-integration-build.md).
-> Entities and options may still change between 0.x releases.
+> browsing, services and diagnostics follow. Entities and options may still change between 0.x
+> releases. The integration needs SnapDog 0.30.0, which is the next server release.
 
 ## Requirements
 
@@ -94,7 +93,7 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🏠 **Server and zones as devices** | One device for the server, one per zone. |
 
 Planned next: clients as devices with volume, latency, zone and speaker correction, the equalizer,
-playlist browsing, `play_media` and services. See the plan linked above.
+playlist browsing, `play_media` and services.
 
 ### Zone identity
 
