@@ -115,7 +115,7 @@ async def test_a_zone_becomes_a_player(
     assert state.attributes["media_title"] == "Song"
     assert state.attributes["media_artist"] == "Artist"
     assert state.attributes["media_duration"] == 200
-    assert state.attributes["app_name"] == "radio"
+    assert state.attributes["app_name"] == "Radio"
     assert state.attributes[ATTR_SUPPORTED_FEATURES] & MediaPlayerEntityFeature.SEEK
 
 
@@ -289,3 +289,32 @@ async def test_a_seek_moves_the_stored_position(
     await coordinator._on_event(zone_changed(position_ms=120_000))
     await hass.async_block_till_done()
     assert hass.states.get(PLAYER).attributes["media_position"] == 120
+
+
+@pytest.mark.parametrize(
+    ("source", "name"),
+    [
+        ("radio", "Radio"),
+        ("subsonicplaylist", "Subsonic"),
+        ("subsonic_track", "Subsonic"),
+        ("url", "URL"),
+        ("airplay", "AirPlay"),
+        ("spotify", "Spotify"),
+        ("somethingnew", "somethingnew"),
+        ("idle", None),
+    ],
+)
+async def test_the_source_is_shown_by_its_name(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    api: MagicMock,
+    listener: MagicMock,
+    source: str,
+    name: str | None,
+) -> None:
+    coordinator = await setup(hass, entry, listener)
+    await coordinator._on_event(zone_changed(source=source))
+    await hass.async_block_till_done()
+    state = hass.states.get(PLAYER)
+    assert state is not None
+    assert state.attributes.get("app_name") == name
