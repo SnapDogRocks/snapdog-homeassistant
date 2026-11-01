@@ -1,0 +1,40 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Mit SnapDog verbinden",
+        "description": "Gib die Adresse deines SnapDog-Servers ein. Den API-Schlüssel brauchst du nur, wenn du die Authentifizierung in snapdog.toml eingeschaltet hast.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "API-Schlüssel",
+          "tls": "HTTPS verwenden",
+          "verify_tls": "Zertifikat prüfen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Neuen API-Schlüssel eingeben",
+        "description": "Der Server hat den API-Schlüssel abgelehnt.",
+        "data": {
+          "api_key": "API-Schlüssel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Der SnapDog-Server ist nicht erreichbar.",
+      "invalid_auth": "Der Server hat den API-Schlüssel abgelehnt.",
+      "unsupported_version": "Diese SnapDog-Version ist zu alt. Aktualisiere den Server auf 0.30.0 oder neuer."
+    },
+    "abort": {
+      "already_configured": "Dieser Server ist bereits eingerichtet.",
+      "no_server_id": "Die Ankündigung enthält keine Server-ID. Füge den Server von Hand hinzu.",
+      "reauth_successful": "Der API-Schlüssel wurde aktualisiert."
+    }
+  },
+  "exceptions": {
+    "request_failed": {
+      "message": "Der SnapDog-Server hat die Anfrage abgelehnt: {error}"
+    }
+  }
+}

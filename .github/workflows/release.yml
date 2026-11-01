@@ -1,0 +1,44 @@
+# Publishes the draft release that Release Please created. HACS installs from published
+# GitHub releases, so a release stays invisible to users until this workflow has checked it
+# and attached the archive.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the draft release to publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ inputs.tag }}
+      - name: The manifest carries the version of the tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r .version custom_components/snapdog/manifest.json)
+          test "v${version}" = "$TAG"
+      - name: Build the archive HACS downloads
+        run: |
+          set -euo pipefail
+          (cd custom_components/snapdog && zip -qr "$GITHUB_WORKSPACE/snapdog.zip" . -x '__pycache__/*' '*.pyc')
+          unzip -l snapdog.zip | grep -E 'manifest.json'
+      - name: Attach the archive and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" snapdog.zip --clobber
+          gh release edit "$TAG" --draft=false

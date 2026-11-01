@@ -1,0 +1,48 @@
+# Template. Goes to .github/dependabot.yml; delete the ecosystems the project
+# does not have.
+#
+# The grouping is deliberately separated by update kind. One group with
+# `patterns: ['*']` across all kinds bundles breaking changes with harmless
+# bumps, and one broken dependency then blocks the whole stack. Minor and patch
+# stay bundled, because checking them individually gains nothing there. Major
+# stays ungrouped, so that each case arrives on its own.
+#
+# `cooldown` keeps a version that is withdrawn shortly after publication out of
+# every pull request.
+# Without a `timezone`, times are in UTC. Anyone needing local execution times
+# enters a suitable IANA time zone per project.
+
+version: 2
+
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '05:00'
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    groups:
+      python-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '05:15'
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 3
+      # semver-major-days is not permitted for github-actions. If it stands
+      # here, Dependabot rejects the ENTIRE file and not a single update runs
+      # any more, not even a security update.
+    groups:
+      github-actions-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]

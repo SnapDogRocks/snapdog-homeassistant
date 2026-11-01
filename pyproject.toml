@@ -1,0 +1,46 @@
+[project]
+name = "snapdog-homeassistant"
+version = "0.0.0"  # managed by release-please, the integration version is in its manifest
+description = "Home Assistant integration for the SnapDog multi-room audio server"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "lefthook>=2.2.2",
+    "mypy>=2.4.1",
+    "pytest-homeassistant-custom-component",
+    "pysnapdog",
+    "ruff>=0.17.3",
+]
+
+# Until pysnapdog is on PyPI the tests take it from its repository.
+[tool.uv.sources]
+pysnapdog = { git = "https://github.com/SnapDogRocks/pysnapdog" }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--cov=custom_components.snapdog --cov-report=term-missing"
+
+[tool.coverage.report]
+fail_under = 90
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "C4", "PT", "RUF", "ASYNC", "TRY", "PL", "N", "A", "ARG", "PERF", "RET", "TID", "PTH", "D"]
+ignore = ["D203", "D213", "D401", "TRY003", "PLR0911", "UP047", "ARG001", "ARG002"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "PLR2004", "PLR0913", "PLR0917"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["custom_components"]
+ignore_missing_imports = true

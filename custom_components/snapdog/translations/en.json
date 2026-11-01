@@ -1,0 +1,40 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Connect to SnapDog",
+        "description": "Enter the address of your SnapDog server. The API key is only needed if you enabled authentication in snapdog.toml.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "API key",
+          "tls": "Use HTTPS",
+          "verify_tls": "Verify the certificate"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Enter a new API key",
+        "description": "The server rejected the API key.",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the SnapDog server.",
+      "invalid_auth": "The server rejected the API key.",
+      "unsupported_version": "This SnapDog version is too old. Update the server to 0.30.0 or newer."
+    },
+    "abort": {
+      "already_configured": "This server is already set up.",
+      "no_server_id": "The announcement carries no server id. Add the server by hand.",
+      "reauth_successful": "The API key was updated."
+    }
+  },
+  "exceptions": {
+    "request_failed": {
+      "message": "The SnapDog server refused the request: {error}"
+    }
+  }
+}

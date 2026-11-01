@@ -1,0 +1,32 @@
+# lefthook for snapdog-homeassistant. lefthook is a dev dependency: `uv sync && uv run lefthook install`.
+
+commit-msg:
+  commands:
+    conventional-commits:
+      run: sh scripts/hooks/check-commit-message.sh {1}
+
+pre-commit:
+  parallel: true
+  commands:
+    staged-guards:
+      run: sh scripts/hooks/check-staged.sh
+    secrets:
+      run: gitleaks git --pre-commit --redact --staged --verbose
+    ruff:
+      glob: "*.py"
+      run: uv run ruff check --fix {staged_files} && uv run ruff format {staged_files}
+      stage_fixed: true
+    # uv.lock must satisfy pyproject.toml, the question CI asks with --locked.
+    lockfile:
+      glob: "{pyproject.toml,uv.lock}"
+      run: uv lock --check
+
+pre-push:
+  parallel: false
+  commands:
+    secrets:
+      run: sh scripts/hooks/check-push-secrets.sh
+    types:
+      run: uv run mypy
+    tests:
+      run: uv run pytest -q
