@@ -1,0 +1,40 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Connettiti a SnapDog",
+        "description": "Inserisci l'indirizzo del tuo server SnapDog. La chiave API serve solo se hai attivato l'autenticazione in snapdog.toml.",
+        "data": {
+          "host": "Host",
+          "port": "Porta",
+          "api_key": "Chiave API",
+          "tls": "Usa HTTPS",
+          "verify_tls": "Verifica il certificato"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Inserisci una nuova chiave API",
+        "description": "Il server ha rifiutato la chiave API.",
+        "data": {
+          "api_key": "Chiave API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Il server SnapDog non è raggiungibile.",
+      "invalid_auth": "Il server ha rifiutato la chiave API.",
+      "unsupported_version": "Questa versione di SnapDog è troppo vecchia. Aggiorna il server alla versione 0.30.0 o successiva."
+    },
+    "abort": {
+      "already_configured": "Questo server è già configurato.",
+      "no_server_id": "L'annuncio non contiene un ID server. Aggiungi il server manualmente.",
+      "reauth_successful": "La chiave API è stata aggiornata."
+    }
+  },
+  "exceptions": {
+    "request_failed": {
+      "message": "Il server SnapDog ha rifiutato la richiesta: {error}"
+    }
+  }
+}
