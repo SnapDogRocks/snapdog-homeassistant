@@ -3500,6 +3500,9 @@ dev = [
     { name = "pytest-homeassistant-custom-component", version = "0.13.375", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.14.2'" },
     { name = "ruff" },
 ]
+runtime = [
+    { name = "pysnapdog" },
+]
 
 [package.metadata]
 
@@ -3507,10 +3510,11 @@ dev = [
 dev = [
     { name = "lefthook", specifier = ">=2.2.2" },
     { name = "mypy", specifier = ">=2.4.1" },
-    { name = "pysnapdog" },
+    { name = "pysnapdog", specifier = "==0.1.0" },
     { name = "pytest-homeassistant-custom-component" },
     { name = "ruff", specifier = ">=0.17.3" },
 ]
+runtime = [{ name = "pysnapdog", specifier = "==0.1.0" }]
 
 [[package]]
 name = "snitun"
