@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "Cannot reach the SnapDog server.",
       "invalid_auth": "The server rejected the API key.",
-      "unsupported_version": "This SnapDog version is too old. Update the server to 0.30.0 or newer."
+      "unsupported_version": "This SnapDog version is too old. Update the server to 0.31.0 or newer."
     },
     "abort": {
       "already_configured": "This server is already set up.",

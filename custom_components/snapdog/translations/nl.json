@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "De SnapDog-server is niet bereikbaar.",
       "invalid_auth": "De server heeft de API-sleutel geweigerd.",
-      "unsupported_version": "Deze SnapDog-versie is te oud. Werk de server bij naar versie 0.30.0 of nieuwer."
+      "unsupported_version": "Deze SnapDog-versie is te oud. Werk de server bij naar versie 0.31.0 of nieuwer."
     },
     "abort": {
       "already_configured": "Deze server is al ingesteld.",

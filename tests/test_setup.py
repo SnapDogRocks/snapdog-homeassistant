@@ -73,7 +73,7 @@ async def test_the_server_and_its_zone_are_devices(
         ("snapdog", f"{entry.data['server_id']}_zone_1"), entry.entry_id
     )
     assert server is not None
-    assert server.sw_version == "0.30.0"
+    assert server.sw_version == "0.31.0"
     assert zone is not None
     assert zone.name == "Ground floor"
     assert zone.via_device_id == server.id

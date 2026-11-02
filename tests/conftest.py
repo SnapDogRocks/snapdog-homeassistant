@@ -129,7 +129,7 @@ def api() -> Generator[MagicMock]:
     """The client the coordinator builds, with one zone."""
     with patch("custom_components.snapdog.coordinator.SnapDogClient") as cls:
         client = cls.return_value
-        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.30.0", "1.90"))
+        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.31.0", "1.90"))
         client.zones = AsyncMock(return_value=[make_zone()])
         client.clients = AsyncMock(return_value=[])
         client.zone_track = AsyncMock(return_value=make_track())

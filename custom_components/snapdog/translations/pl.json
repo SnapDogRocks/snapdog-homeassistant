@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "Serwer SnapDog jest niedostępny.",
       "invalid_auth": "Serwer odrzucił klucz API.",
-      "unsupported_version": "Ta wersja SnapDog jest zbyt stara. Zaktualizuj serwer do wersji 0.30.0 lub nowszej."
+      "unsupported_version": "Ta wersja SnapDog jest zbyt stara. Zaktualizuj serwer do wersji 0.31.0 lub nowszej."
     },
     "abort": {
       "already_configured": "Ten serwer jest już skonfigurowany.",
