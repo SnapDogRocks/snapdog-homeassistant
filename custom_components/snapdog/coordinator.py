@@ -15,6 +15,8 @@ from pysnapdog import (
     Client,
     ClientStateChanged,
     Event,
+    Playlist,
+    PlaylistsChanged,
     SnapDogAuthError,
     SnapDogClient,
     SnapDogError,
@@ -46,6 +48,7 @@ class SnapDogData:
     zones: dict[int, Zone] = field(default_factory=dict)
     tracks: dict[int, TrackMetadata] = field(default_factory=dict)
     clients: dict[int, Client] = field(default_factory=dict)
+    playlists: list[Playlist] = field(default_factory=list)
 
 
 class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
@@ -98,7 +101,10 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
         zones = {zone.index: zone for zone in await api.zones()}
         clients = {client.index: client for client in await api.clients()}
         tracks = {index: await api.zone_track(index) for index in zones}
-        return SnapDogData(version=version, zones=zones, tracks=tracks, clients=clients)
+        playlists = await api.playlists()
+        return SnapDogData(
+            version=version, zones=zones, tracks=tracks, clients=clients, playlists=playlists
+        )
 
     async def _on_connected(self) -> None:
         self.async_set_updated_data(await self._load())
@@ -152,7 +158,8 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     cover_url=event.cover_url,
                     bitrate_kbps=event.bitrate_kbps,
                     content_type=event.content_type,
-                    playlist_index=event.playlist,
+                    playlist_index=event.playlist_index,
+                    playlist_id=event.playlist_id,
                     playlist_name=event.playlist_name,
                     playlist_total=event.playlist_total,
                     playlist_track_index=event.track_index,
@@ -175,6 +182,14 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     zone_index=event.zone,
                     is_snapdog=event.is_snapdog,
                 )
+            case PlaylistsChanged():
+                # An index, a name or the whole list may have changed. Keep the old list when
+                # the server cannot be read right now, the next event or reconnect reloads it.
+                try:
+                    data.playlists = await self.api.playlists()
+                except SnapDogError as err:
+                    LOGGER.warning("Cannot reload the playlists: %s", err)
+                    return
             case _:
                 return
         self.async_set_updated_data(data)

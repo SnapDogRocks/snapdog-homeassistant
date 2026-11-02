@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from unittest.mock import MagicMock
 
 import pytest
@@ -96,7 +97,8 @@ def zone_changed(**changes: object) -> ZoneChanged:
         "content_type": None,
         "track_index": 0,
         "track_count": 10,
-        "playlist": 0,
+        "playlist_index": 0,
+        "playlist_id": "snapdog:radio",
         "playlist_name": "Radio",
         "playlist_total": 10,
     }
@@ -318,3 +320,29 @@ async def test_the_source_is_shown_by_its_name(
     state = hass.states.get(PLAYER)
     assert state is not None
     assert state.attributes.get("app_name") == name
+
+
+async def test_a_zone_changed_event_carries_the_playlist_by_index_and_id(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    """The event has ``playlist_index`` and ``playlist_id`` and no ``playlist`` field."""
+    event = zone_changed(playlist_index=4, playlist_id="subsonic:42", playlist_name="Jazz")
+    assert "playlist" not in {field.name for field in dataclasses.fields(event)}
+    coordinator = await setup(hass, entry, listener)
+    await coordinator._on_event(event)
+    track = coordinator.data.tracks[1]
+    assert track.playlist_index == 4
+    assert track.playlist_id == "subsonic:42"
+    assert track.playlist_name == "Jazz"
+
+
+async def test_a_zone_without_a_playlist_keeps_none(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    coordinator = await setup(hass, entry, listener)
+    await coordinator._on_event(
+        zone_changed(playlist_index=None, playlist_id=None, playlist_name=None)
+    )
+    track = coordinator.data.tracks[1]
+    assert track.playlist_index is None
+    assert track.playlist_id is None

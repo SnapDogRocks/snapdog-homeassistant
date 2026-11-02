@@ -2763,14 +2763,14 @@ sdist = { url = "https://files.pythonhosted.org/packages/08/64/a99f27d3b4347486c
 
 [[package]]
 name = "pysnapdog"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/4f/8e21098d969f1fa637f6d6adadd0e3205aa602de4d012ae7bbc9af261ef3/pysnapdog-0.1.0.tar.gz", hash = "sha256:cbf7fb468fb76ea47b93bbd81bbafa44a0615de1f3f3209c51b660b1956639ea", size = 130794, upload-time = "2026-11-01T22:14:45.049Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/13/878e0b7275984e9b7a0cc26bb9b66f90d443a468e1cc142901636d185051/pysnapdog-0.2.0.tar.gz", hash = "sha256:91dd8892eb8f1c9a4f97be0571cd1f829ea728a0798c328ad446479df422060a", size = 136822, upload-time = "2026-11-02T22:22:06.552Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/db/f874d1242944914f75b5316fcffbd4e3606bb4550ab40a2be09ecbec7ef1/pysnapdog-0.1.0-py3-none-any.whl", hash = "sha256:7d5cc8b66c9a2ae507e0ba24256e44baf02c2a729ca20aac78f4ebb4f2c5a6fb", size = 24077, upload-time = "2026-11-01T22:14:43.873Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/87/67da489251de46c010a67100fd7377c0c352c04dffffa69650be4a76b327/pysnapdog-0.2.0-py3-none-any.whl", hash = "sha256:4aed0d3055a37bf79704807ec4a56d3390c371b521adc9470824825808ccfe63", size = 25925, upload-time = "2026-11-02T22:22:05.642Z" },
 ]
 
 [[package]]
@@ -3510,11 +3510,11 @@ runtime = [
 dev = [
     { name = "lefthook", specifier = ">=2.2.2" },
     { name = "mypy", specifier = ">=2.4.1" },
-    { name = "pysnapdog", specifier = "==0.1.0" },
+    { name = "pysnapdog", specifier = "==0.2.0" },
     { name = "pytest-homeassistant-custom-component" },
     { name = "ruff", specifier = ">=0.17.3" },
 ]
-runtime = [{ name = "pysnapdog", specifier = "==0.1.0" }]
+runtime = [{ name = "pysnapdog", specifier = "==0.2.0" }]
 
 [[package]]
 name = "snitun"
