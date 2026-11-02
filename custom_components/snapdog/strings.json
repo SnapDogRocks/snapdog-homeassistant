@@ -35,6 +35,12 @@
   "exceptions": {
     "request_failed": {
       "message": "The SnapDog server refused the request: {error}"
+    },
+    "invalid_media_id": {
+      "message": "\"{media_id}\" is not a playlist or track of SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "The SnapDog server has no playlist \"{playlist_id}\"."
     }
   }
 }

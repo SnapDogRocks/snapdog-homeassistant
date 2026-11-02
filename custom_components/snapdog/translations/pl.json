@@ -35,6 +35,12 @@
   "exceptions": {
     "request_failed": {
       "message": "Serwer SnapDog odrzucił żądanie: {error}"
+    },
+    "invalid_media_id": {
+      "message": "„{media_id}” nie jest listą odtwarzania ani utworem SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "Serwer SnapDog nie ma listy odtwarzania „{playlist_id}”."
     }
   }
 }

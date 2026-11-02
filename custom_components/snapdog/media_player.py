@@ -3,23 +3,28 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from homeassistant.components.media_player import MediaPlayerEntity
+from homeassistant.components.media_player.browse_media import BrowseMedia
 from homeassistant.components.media_player.const import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
     RepeatMode,
 )
+from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 from pysnapdog import RepeatMode as SnapDogRepeat
 from pysnapdog import TrackMetadata, Zone
 
-from .const import CONF_SERVER_ID, POSITION_TOLERANCE
+from .const import CONF_SERVER_ID, DOMAIN, POSITION_TOLERANCE
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import SnapDogEntity, request
+from .media import MediaRef, browse_playlist, browse_root, parse_media_id
 
 PARALLEL_UPDATES = 1
 
@@ -58,6 +63,8 @@ _BASE_FEATURES = (
     | MediaPlayerEntityFeature.VOLUME_MUTE
     | MediaPlayerEntityFeature.SHUFFLE_SET
     | MediaPlayerEntityFeature.REPEAT_SET
+    | MediaPlayerEntityFeature.BROWSE_MEDIA
+    | MediaPlayerEntityFeature.PLAY_MEDIA
 )
 
 
@@ -255,3 +262,50 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
     async def async_set_repeat(self, repeat: RepeatMode) -> None:
         """Set the repeat mode."""
         await request(self.coordinator.api.set_zone_repeat(self._zone, _REPEAT_FROM_HA[repeat]))
+
+    async def async_browse_media(
+        self, media_content_type: MediaType | str | None = None, media_content_id: str | None = None
+    ) -> BrowseMedia:
+        """The playlists of the server, and the tracks of one playlist.
+
+        The tracks are read when a playlist is opened, never for the whole library.
+        """
+        playlists = self.coordinator.data.playlists
+        if not media_content_id:
+            return browse_root(playlists)
+        ref = _media_ref(media_content_id, BrowseError)
+        if ref.track is not None:
+            raise _error(BrowseError, "invalid_media_id", media_id=media_content_id)
+        name = next((item.name for item in playlists if item.playlist_id == ref.playlist_id), None)
+        if name is None:
+            raise _error(BrowseError, "unknown_playlist", playlist_id=ref.playlist_id)
+        tracks = await request(self.coordinator.api.playlist_tracks_by_id(ref.playlist_id))
+        return browse_playlist(ref.playlist_id, name, tracks, expanded=True)
+
+    async def async_play_media(
+        self, media_type: MediaType | str, media_id: str, **kwargs: Any
+    ) -> None:
+        """Play a playlist, or one track of it, by the media id the browser hands out.
+
+        The server switches the zone to the playlist and starts at the track. The request names
+        the playlist by its ``playlist_id``, so a playlist that moved meanwhile is still found.
+        """
+        ref = _media_ref(media_id, ServiceValidationError)
+        if ref.media_type != media_type:
+            raise _error(ServiceValidationError, "invalid_media_id", media_id=media_id)
+        await request(self.coordinator.api.play_playlist_id(self._zone, ref.playlist_id, ref.track))
+
+
+def _error(error: type[HomeAssistantError], key: str, **placeholders: str) -> HomeAssistantError:
+    """A translated error of the given class."""
+    return error(
+        translation_domain=DOMAIN, translation_key=key, translation_placeholders=placeholders
+    )
+
+
+def _media_ref(media_id: str, error: type[HomeAssistantError]) -> MediaRef:
+    """Read a media id, or fail with ``error`` when it is not one of ours."""
+    try:
+        return parse_media_id(media_id)
+    except ValueError as err:
+        raise _error(error, "invalid_media_id", media_id=media_id) from err

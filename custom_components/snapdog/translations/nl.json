@@ -35,6 +35,12 @@
   "exceptions": {
     "request_failed": {
       "message": "De SnapDog-server heeft het verzoek geweigerd: {error}"
+    },
+    "invalid_media_id": {
+      "message": "\"{media_id}\" is geen afspeellijst of nummer van SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "De SnapDog-server heeft geen afspeellijst \"{playlist_id}\"."
     }
   }
 }
