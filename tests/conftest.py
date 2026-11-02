@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT
-from pysnapdog import Playlist, RepeatMode, TrackMetadata, VersionInfo, Zone
+from pysnapdog import MediaTrack, Playlist, RepeatMode, TrackMetadata, VersionInfo, Zone
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import (
@@ -94,6 +94,19 @@ def make_playlist(**changes: Any) -> Playlist:
     return _replace(playlist, changes)
 
 
+def make_media_track(**changes: Any) -> MediaTrack:
+    track = MediaTrack(
+        id="tr-1",
+        track=0,
+        title="So What",
+        artist="Miles Davis",
+        album="Kind of Blue",
+        duration=545,
+        cover_art=None,
+    )
+    return _replace(track, changes)
+
+
 @pytest.fixture
 def entry() -> MockConfigEntry:
     return MockConfigEntry(
@@ -116,7 +129,7 @@ def api() -> Generator[MagicMock]:
     """The client the coordinator builds, with one zone."""
     with patch("custom_components.snapdog.coordinator.SnapDogClient") as cls:
         client = cls.return_value
-        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.30.0", "1.90"))
+        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.31.0", "1.90"))
         client.zones = AsyncMock(return_value=[make_zone()])
         client.clients = AsyncMock(return_value=[])
         client.zone_track = AsyncMock(return_value=make_track())
@@ -124,6 +137,12 @@ def api() -> Generator[MagicMock]:
             return_value=[
                 make_playlist(),
                 make_playlist(index=1, playlist_id="subsonic:42", name="Jazz", song_count=3),
+            ]
+        )
+        client.playlist_tracks_by_id = AsyncMock(
+            return_value=[
+                make_media_track(),
+                make_media_track(id="tr-2", track=1, title="Blue in Green", artist=""),
             ]
         )
         for name in (
@@ -137,6 +156,8 @@ def api() -> Generator[MagicMock]:
             "set_zone_mute",
             "set_zone_shuffle",
             "set_zone_repeat",
+            "set_zone_playlist_id",
+            "play_playlist_id",
         ):
             setattr(client, name, AsyncMock(return_value=None))
         yield client

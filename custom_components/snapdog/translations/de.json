@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "Der SnapDog-Server ist nicht erreichbar.",
       "invalid_auth": "Der Server hat den API-Schlüssel abgelehnt.",
-      "unsupported_version": "Diese SnapDog-Version ist zu alt. Aktualisiere den Server auf 0.30.0 oder neuer."
+      "unsupported_version": "Diese SnapDog-Version ist zu alt. Aktualisiere den Server auf 0.31.0 oder neuer."
     },
     "abort": {
       "already_configured": "Dieser Server ist bereits eingerichtet.",
@@ -35,6 +35,15 @@
   "exceptions": {
     "request_failed": {
       "message": "Der SnapDog-Server hat die Anfrage abgelehnt: {error}"
+    },
+    "invalid_media_id": {
+      "message": "„{media_id}“ ist keine Playlist und kein Titel von SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "Der SnapDog-Server hat keine Playlist „{playlist_id}“."
+    },
+    "unknown_source": {
+      "message": "Der SnapDog-Server hat keine Playlist mit dem Namen „{source}“."
     }
   }
 }

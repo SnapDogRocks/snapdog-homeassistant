@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "De SnapDog-server is niet bereikbaar.",
       "invalid_auth": "De server heeft de API-sleutel geweigerd.",
-      "unsupported_version": "Deze SnapDog-versie is te oud. Werk de server bij naar versie 0.30.0 of nieuwer."
+      "unsupported_version": "Deze SnapDog-versie is te oud. Werk de server bij naar versie 0.31.0 of nieuwer."
     },
     "abort": {
       "already_configured": "Deze server is al ingesteld.",
@@ -35,6 +35,15 @@
   "exceptions": {
     "request_failed": {
       "message": "De SnapDog-server heeft het verzoek geweigerd: {error}"
+    },
+    "invalid_media_id": {
+      "message": "\"{media_id}\" is geen afspeellijst of nummer van SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "De SnapDog-server heeft geen afspeellijst \"{playlist_id}\"."
+    },
+    "unknown_source": {
+      "message": "De SnapDog-server heeft geen afspeellijst met de naam \"{source}\"."
     }
   }
 }

@@ -41,7 +41,7 @@ def flow_api() -> MagicMock:
         patch("custom_components.snapdog.async_setup_entry", return_value=True),
     ):
         client = cls.return_value
-        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.30.0", "1.90"))
+        client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.31.0", "1.90"))
         client.zones = AsyncMock(return_value=[])
         yield client
 
@@ -103,7 +103,7 @@ async def test_a_failed_check_shows_its_error_and_can_be_retried(
 
 
 async def test_an_old_server_is_refused(hass: HomeAssistant, flow_api: MagicMock) -> None:
-    flow_api.version.return_value = VersionInfo("SnapDog", "0.29.0", "1.90")
+    flow_api.version.return_value = VersionInfo("SnapDog", "0.30.0", "1.90")
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -114,7 +114,7 @@ async def test_an_old_server_is_refused(hass: HomeAssistant, flow_api: MagicMock
 async def test_a_development_version_counts_by_its_number(
     hass: HomeAssistant, flow_api: MagicMock
 ) -> None:
-    flow_api.version.return_value = VersionInfo("SnapDog", "0.30.0-dev+abc", "1.90")
+    flow_api.version.return_value = VersionInfo("SnapDog", "0.31.0-dev+abc", "1.90")
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )

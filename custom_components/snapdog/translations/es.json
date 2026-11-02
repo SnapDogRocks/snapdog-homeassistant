@@ -24,7 +24,7 @@
     "error": {
       "cannot_connect": "No se puede acceder al servidor SnapDog.",
       "invalid_auth": "El servidor rechazó la clave de API.",
-      "unsupported_version": "Esta versión de SnapDog es demasiado antigua. Actualiza el servidor a la versión 0.30.0 o posterior."
+      "unsupported_version": "Esta versión de SnapDog es demasiado antigua. Actualiza el servidor a la versión 0.31.0 o posterior."
     },
     "abort": {
       "already_configured": "Este servidor ya está configurado.",
@@ -35,6 +35,15 @@
   "exceptions": {
     "request_failed": {
       "message": "El servidor SnapDog rechazó la solicitud: {error}"
+    },
+    "invalid_media_id": {
+      "message": "«{media_id}» no es una lista de reproducción ni una pista de SnapDog."
+    },
+    "unknown_playlist": {
+      "message": "El servidor SnapDog no tiene la lista de reproducción «{playlist_id}»."
+    },
+    "unknown_source": {
+      "message": "El servidor SnapDog no tiene ninguna lista de reproducción llamada «{source}»."
     }
   }
 }
