@@ -41,6 +41,9 @@
     },
     "unknown_playlist": {
       "message": "The SnapDog server has no playlist \"{playlist_id}\"."
+    },
+    "unknown_source": {
+      "message": "The SnapDog server has no playlist called \"{source}\"."
     }
   }
 }

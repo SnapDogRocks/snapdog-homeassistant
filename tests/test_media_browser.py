@@ -7,9 +7,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from homeassistant.components.media_player import (
+    ATTR_INPUT_SOURCE,
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_CONTENT_TYPE,
     SERVICE_PLAY_MEDIA,
+    SERVICE_SELECT_SOURCE,
     MediaPlayerEntityFeature,
 )
 from homeassistant.components.media_player import DOMAIN as MEDIA_PLAYER
@@ -23,7 +25,7 @@ from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 from custom_components.snapdog.media import MediaRef, parse_media_id
 
 from .conftest import make_playlist
-from .test_media_player import PLAYER, setup
+from .test_media_player import PLAYER, setup, zone_changed
 
 
 async def browse(client: Any, content_id: str | None = None) -> dict[str, Any]:
@@ -222,3 +224,103 @@ async def test_a_refused_play_surfaces(
     api.play_playlist_id.side_effect = SnapDogNotFoundError("unknown", status=404)
     with pytest.raises(HomeAssistantError):
         await play(hass, "playlist", "playlist/subsonic%3A42")
+
+
+async def test_the_sources_are_the_playlist_names(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    state = hass.states.get(PLAYER)
+    assert state is not None
+    assert state.attributes[ATTR_SUPPORTED_FEATURES] & MediaPlayerEntityFeature.SELECT_SOURCE
+    assert state.attributes["source_list"] == ["Radio", "Jazz"]
+    assert state.attributes["source"] == "Radio"
+
+
+async def test_the_source_follows_the_playlist_id_not_the_index(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    """The zone reports index 1, but the playlist with that index is another one now."""
+    coordinator = await setup(hass, entry, listener)
+    api.playlists.return_value = [
+        make_playlist(),
+        make_playlist(index=1, playlist_id="subsonic:7", name="New"),
+        make_playlist(index=2, playlist_id="subsonic:42", name="Jazz"),
+    ]
+    await coordinator._on_event(PlaylistsChanged(total=3))
+    await coordinator._on_event(
+        zone_changed(playlist_index=1, playlist_id="subsonic:42", playlist_name="Jazz")
+    )
+    await hass.async_block_till_done()
+    assert hass.states.get(PLAYER).attributes["source"] == "Jazz"
+
+
+async def test_no_source_without_a_known_playlist(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    coordinator = await setup(hass, entry, listener)
+    await coordinator._on_event(
+        zone_changed(source="airplay", playlist_index=None, playlist_id=None, playlist_name=None)
+    )
+    await hass.async_block_till_done()
+    assert hass.states.get(PLAYER).attributes.get("source") is None
+
+
+async def test_equal_names_are_told_apart_and_a_playlist_without_id_is_left_out(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    coordinator = await setup(hass, entry, listener)
+    api.playlists.return_value = [
+        make_playlist(index=0, playlist_id="snapdog:radio", name="Radio"),
+        make_playlist(index=1, playlist_id="subsonic:1", name="Mix"),
+        make_playlist(index=2, playlist_id="subsonic:2", name="Mix"),
+        make_playlist(index=3, playlist_id=None, name="Old"),
+    ]
+    await coordinator._on_event(PlaylistsChanged(total=4))
+    await hass.async_block_till_done()
+    assert hass.states.get(PLAYER).attributes["source_list"] == [
+        "Radio",
+        "Mix (subsonic:1)",
+        "Mix (subsonic:2)",
+    ]
+
+
+async def test_selecting_a_source_selects_the_playlist_by_id(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await hass.services.async_call(
+        MEDIA_PLAYER,
+        SERVICE_SELECT_SOURCE,
+        {ATTR_ENTITY_ID: PLAYER, ATTR_INPUT_SOURCE: "Jazz"},
+        blocking=True,
+    )
+    api.set_zone_playlist_id.assert_awaited_once_with(1, "subsonic:42")
+
+
+async def test_an_unknown_source_is_refused(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            MEDIA_PLAYER,
+            SERVICE_SELECT_SOURCE,
+            {ATTR_ENTITY_ID: PLAYER, ATTR_INPUT_SOURCE: "Nothing"},
+            blocking=True,
+        )
+    api.set_zone_playlist_id.assert_not_called()
+
+
+async def test_a_refused_source_change_surfaces(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    api.set_zone_playlist_id.side_effect = SnapDogNotFoundError("unknown", status=404)
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            MEDIA_PLAYER,
+            SERVICE_SELECT_SOURCE,
+            {ATTR_ENTITY_ID: PLAYER, ATTR_INPUT_SOURCE: "Jazz"},
+            blocking=True,
+        )

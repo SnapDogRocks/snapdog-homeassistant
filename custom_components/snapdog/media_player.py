@@ -24,7 +24,7 @@ from pysnapdog import TrackMetadata, Zone
 from .const import CONF_SERVER_ID, DOMAIN, POSITION_TOLERANCE
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import SnapDogEntity, request
-from .media import MediaRef, browse_playlist, browse_root, parse_media_id
+from .media import MediaRef, browse_playlist, browse_root, parse_media_id, source_labels
 
 PARALLEL_UPDATES = 1
 
@@ -65,6 +65,7 @@ _BASE_FEATURES = (
     | MediaPlayerEntityFeature.REPEAT_SET
     | MediaPlayerEntityFeature.BROWSE_MEDIA
     | MediaPlayerEntityFeature.PLAY_MEDIA
+    | MediaPlayerEntityFeature.SELECT_SOURCE
 )
 
 
@@ -216,6 +217,20 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
         return self._track.playlist_name
 
     @property
+    def source_list(self) -> list[str]:
+        """The playlists of the server by name, the radio list included."""
+        return list(source_labels(self.coordinator.data.playlists))
+
+    @property
+    def source(self) -> str | None:
+        """The playlist the zone is on. It is found by ``playlist_id``, never by index."""
+        playlist_id = self._track.playlist_id
+        for label, candidate in source_labels(self.coordinator.data.playlists).items():
+            if candidate == playlist_id:
+                return label
+        return None
+
+    @property
     def app_name(self) -> str | None:
         """The source that plays, by its name. Nothing while the zone is idle."""
         source = self._zone_state.source
@@ -262,6 +277,13 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
     async def async_set_repeat(self, repeat: RepeatMode) -> None:
         """Set the repeat mode."""
         await request(self.coordinator.api.set_zone_repeat(self._zone, _REPEAT_FROM_HA[repeat]))
+
+    async def async_select_source(self, source: str) -> None:
+        """Select a playlist by name. The zone switches to it when it is playing."""
+        playlist_id = source_labels(self.coordinator.data.playlists).get(source)
+        if playlist_id is None:
+            raise _error(ServiceValidationError, "unknown_source", source=source)
+        await request(self.coordinator.api.set_zone_playlist_id(self._zone, playlist_id))
 
     async def async_browse_media(
         self, media_content_type: MediaType | str | None = None, media_content_id: str | None = None

@@ -41,6 +41,9 @@
     },
     "unknown_playlist": {
       "message": "O servidor SnapDog não tem a lista de reprodução \"{playlist_id}\"."
+    },
+    "unknown_source": {
+      "message": "O servidor SnapDog não tem nenhuma lista de reprodução chamada \"{source}\"."
     }
   }
 }

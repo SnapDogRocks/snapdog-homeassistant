@@ -41,6 +41,9 @@
     },
     "unknown_playlist": {
       "message": "De SnapDog-server heeft geen afspeellijst \"{playlist_id}\"."
+    },
+    "unknown_source": {
+      "message": "De SnapDog-server heeft geen afspeellijst met de naam \"{source}\"."
     }
   }
 }
