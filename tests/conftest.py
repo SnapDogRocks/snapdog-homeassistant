@@ -73,6 +73,7 @@ def make_track(**changes: Any) -> TrackMetadata:
         sample_rate=None,
         content_type=None,
         playlist_index=0,
+        playlist_id="snapdog:radio",
         playlist_name="Radio",
         playlist_total=10,
         playlist_track_index=2,
