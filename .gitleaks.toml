@@ -1,0 +1,13 @@
+# Home Assistant raises translated errors with `translation_key=key, translation_placeholders=...`.
+# The default `generic-api-key` rule reads the parameter name `key` as the start of a secret. The allowlist
+# applies to that rule only and to the text it matched, so every other rule and every other match
+# in the same file or line is still reported.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "translation_key argument of a Home Assistant error"
+regexTarget = "match"
+regexes = ['''^key,\s*translation_placeholders=\w+$''']
