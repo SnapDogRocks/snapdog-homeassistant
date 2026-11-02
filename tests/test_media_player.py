@@ -117,7 +117,7 @@ async def test_a_zone_becomes_a_player(
     assert state.attributes["media_title"] == "Song"
     assert state.attributes["media_artist"] == "Artist"
     assert state.attributes["media_duration"] == 200
-    assert state.attributes["app_name"] == "Radio"
+    assert "app_name" not in state.attributes
     assert state.attributes[ATTR_SUPPORTED_FEATURES] & MediaPlayerEntityFeature.SEEK
 
 
@@ -296,17 +296,17 @@ async def test_a_seek_moves_the_stored_position(
 @pytest.mark.parametrize(
     ("source", "name"),
     [
-        ("radio", "Radio"),
-        ("subsonicplaylist", "Subsonic"),
-        ("subsonic_track", "Subsonic"),
-        ("url", "URL"),
+        ("radio", None),
+        ("subsonicplaylist", None),
+        ("subsonic_track", None),
+        ("url", None),
         ("airplay", "AirPlay"),
         ("spotify", "Spotify"),
-        ("somethingnew", "somethingnew"),
+        ("somethingnew", None),
         ("idle", None),
     ],
 )
-async def test_the_source_is_shown_by_its_name(
+async def test_only_airplay_and_spotify_are_shown_as_an_app(
     hass: HomeAssistant,
     entry: MockConfigEntry,
     api: MagicMock,

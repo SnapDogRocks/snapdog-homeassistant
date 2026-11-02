@@ -39,15 +39,10 @@ _REPEAT_TO_HA = {
 }
 _REPEAT_FROM_HA = {ha: sd for sd, ha in _REPEAT_TO_HA.items()}
 
-# The server names its sources by type. Both spellings of the Subsonic ones occur: REST and
-# WebSocket send the serde form, MQTT the display form. An unknown name is shown as it is.
-_SOURCE_NAMES = {
-    "radio": "Radio",
-    "subsonicplaylist": "Subsonic",
-    "subsonic_playlist": "Subsonic",
-    "subsonictrack": "Subsonic",
-    "subsonic_track": "Subsonic",
-    "url": "URL",
+# Only the sources that are an app on someone's phone or computer get an app name. Radio,
+# Subsonic and URLs are shown as the playlist the zone is on (``source``). The server names its
+# sources by type, REST and WebSocket send the serde form.
+_APP_NAMES = {
     "airplay": "AirPlay",
     "spotify": "Spotify",
 }
@@ -232,11 +227,8 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
 
     @property
     def app_name(self) -> str | None:
-        """The source that plays, by its name. Nothing while the zone is idle."""
-        source = self._zone_state.source
-        if not source or source == "idle":
-            return None
-        return _SOURCE_NAMES.get(source, source)
+        """AirPlay or Spotify while one of them plays, otherwise nothing."""
+        return _APP_NAMES.get(self._zone_state.source)
 
     async def async_media_play(self) -> None:
         """Start or resume."""
