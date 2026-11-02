@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT
-from pysnapdog import RepeatMode, TrackMetadata, VersionInfo, Zone
+from pysnapdog import Playlist, RepeatMode, TrackMetadata, VersionInfo, Zone
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import (
@@ -82,6 +82,18 @@ def make_track(**changes: Any) -> TrackMetadata:
     return _replace(track, changes)
 
 
+def make_playlist(**changes: Any) -> Playlist:
+    playlist = Playlist(
+        index=0,
+        playlist_id="snapdog:radio",
+        name="Radio",
+        song_count=10,
+        duration=0,
+        cover_art=None,
+    )
+    return _replace(playlist, changes)
+
+
 @pytest.fixture
 def entry() -> MockConfigEntry:
     return MockConfigEntry(
@@ -108,6 +120,12 @@ def api() -> Generator[MagicMock]:
         client.zones = AsyncMock(return_value=[make_zone()])
         client.clients = AsyncMock(return_value=[])
         client.zone_track = AsyncMock(return_value=make_track())
+        client.playlists = AsyncMock(
+            return_value=[
+                make_playlist(),
+                make_playlist(index=1, playlist_id="subsonic:42", name="Jazz", song_count=3),
+            ]
+        )
         for name in (
             "play",
             "pause",

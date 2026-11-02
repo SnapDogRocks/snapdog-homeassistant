@@ -8,10 +8,15 @@ import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
-from pysnapdog import SnapDogAuthError, SnapDogConnectionError, SnapDogResponseError
+from pysnapdog import (
+    PlaylistsChanged,
+    SnapDogAuthError,
+    SnapDogConnectionError,
+    SnapDogResponseError,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from .conftest import make_zone
+from .conftest import make_playlist, make_zone
 
 
 async def test_an_unreachable_server_retries_later(
@@ -100,3 +105,47 @@ async def test_a_failed_reload_after_a_reconnect_does_not_kill_the_entry(
     with pytest.raises(SnapDogResponseError):
         await listener.call_args.kwargs["on_connected"]()
     assert entry.state is ConfigEntryState.LOADED
+
+
+async def test_the_playlists_are_read_with_the_state(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    playlists = entry.runtime_data.data.playlists
+    assert [(p.index, p.playlist_id) for p in playlists] == [
+        (0, "snapdog:radio"),
+        (1, "subsonic:42"),
+    ]
+
+
+async def test_playlists_changed_reloads_the_list(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    coordinator = entry.runtime_data
+    api.playlists.return_value = [make_playlist(), make_playlist(index=1, playlist_id="subsonic:7")]
+    await coordinator._on_event(PlaylistsChanged(total=2))
+    assert [p.playlist_id for p in coordinator.data.playlists] == ["snapdog:radio", "subsonic:7"]
+
+
+async def test_the_playlists_are_read_again_after_a_reconnect(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    api.playlists.return_value = [make_playlist(index=0, playlist_id="snapdog:radio")]
+    await listener.call_args.kwargs["on_connected"]()
+    assert len(entry.runtime_data.data.playlists) == 1
+
+
+async def test_a_failed_playlist_reload_keeps_the_old_list(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    coordinator = entry.runtime_data
+    api.playlists.side_effect = SnapDogConnectionError("down")
+    await coordinator._on_event(PlaylistsChanged(total=5))
+    assert len(coordinator.data.playlists) == 2
