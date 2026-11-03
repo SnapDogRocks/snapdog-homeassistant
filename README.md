@@ -25,16 +25,16 @@ Assistant shows up everywhere within a moment. It uses the client library
 [`pysnapdog`](https://github.com/SnapDogRocks/pysnapdog).
 
 > [!NOTE]
-> **Alpha.** The first release covers zones as media players. Clients, equalizer, sources and
-> browsing, services and diagnostics follow. Entities and options may still change between 0.x
-> releases. The integration needs SnapDog 0.30.0, which is the next server release.
+> **Alpha.** The first release covers zones as media players and a media browser for the
+> playlists of the server. Clients, equalizer, search, services and diagnostics follow. Entities
+> and options may still change between 0.x releases. The integration needs SnapDog 0.31.0 or newer.
 
 ## Requirements
 
 | | |
 |---|---|
 | Home Assistant | **2026.10** or newer |
-| SnapDog server | **0.30.0** or newer (needs `GET /api/v1/eq/presets` and the corrected API contract) |
+| SnapDog server | **0.31.0** or newer (needs `playlist_id`, the `by-id` playlist endpoints, the `playlists_changed` event and `GET /api/v1/eq/presets`) |
 | Network | Home Assistant can reach the server (port `5555` by default) |
 | API key | Only if you turned on authentication in `snapdog.toml` (`[http].api_keys`) |
 
