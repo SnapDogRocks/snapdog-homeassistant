@@ -11,7 +11,7 @@ dependencies = []
 # What Home Assistant installs for users, taken from manifest.json (a test checks that they agree).
 # The audit looks at this group only. The dev group follows Home Assistant's own pins, which
 # carry advisories of their own and never reach a user's installation.
-runtime = ["pysnapdog==0.2.0"]
+runtime = ["pysnapdog==0.3.0"]
 dev = [
     {include-group = "runtime"},
     "lefthook>=2.2.2",
