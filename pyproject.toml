@@ -4,7 +4,7 @@ version = "0.0.0"  # managed by release-please, the integration version is in it
 description = "Home Assistant integration for the SnapDog multi-room audio server"
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.14"
+requires-python = ">=3.14.2"
 dependencies = []
 
 [dependency-groups]
@@ -44,3 +44,8 @@ python_version = "3.14"
 strict = true
 files = ["custom_components"]
 ignore_missing_imports = true
+
+[tool.uv]
+# Home Assistant pins Pillow==12.3.0 exactly. 13.0.0 fixes the advisories of 12.x, and no
+# code of this integration or its tests loads an image.
+override-dependencies = ["pillow>=13.0.0"]
