@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.1.0...v0.2.0) (2026-11-07)
+
+
+### Features
+
+* manage the playlists of the media server with actions ([#21](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/21)) ([4c70bbe](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/4c70bbe712260bdd273b47537f5c4ee7e82b102a))
+* search the media of the server ([#17](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/17)) ([f3e0a08](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/f3e0a08d922cdacab38907d6bb4d172b6eee22fa))
+* show covers in the media browser and in search results ([#19](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/19)) ([43b28e4](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/43b28e42dc1d68b22e1f144f2bd49ed572eb1198))
+* show the cover of the track on air as the entity picture ([#20](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/20)) ([7e82b2c](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/7e82b2c792e524b99792e169e25149f3cfea0bf7))
+
 ## [0.1.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.1.0...v0.1.0) (2026-11-03)
 
 
