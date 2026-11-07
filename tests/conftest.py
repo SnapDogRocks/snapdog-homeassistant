@@ -9,7 +9,17 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT
-from pysnapdog import MediaTrack, Playlist, RepeatMode, TrackMetadata, VersionInfo, Zone
+from pysnapdog import (
+    MediaTrack,
+    Playlist,
+    RepeatMode,
+    SearchItem,
+    SearchKind,
+    SearchResult,
+    TrackMetadata,
+    VersionInfo,
+    Zone,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import (
@@ -107,6 +117,22 @@ def make_media_track(**changes: Any) -> MediaTrack:
     return _replace(track, changes)
 
 
+def make_search_item(**changes: Any) -> SearchItem:
+    item = SearchItem(
+        kind=SearchKind.TRACK,
+        title="So What",
+        subtitle="Miles Davis",
+        duration=545,
+        cover_art=None,
+        track_id="tr-1",
+        album_id=None,
+        playlist_id=None,
+        index=None,
+        track=None,
+    )
+    return _replace(item, changes)
+
+
 @pytest.fixture
 def entry() -> MockConfigEntry:
     return MockConfigEntry(
@@ -145,6 +171,7 @@ def api() -> Generator[MagicMock]:
                 make_media_track(id="tr-2", track=1, title="Blue in Green", artist=""),
             ]
         )
+        client.search = AsyncMock(return_value=SearchResult(items=(), next_offset=None))
         for name in (
             "play",
             "pause",
@@ -158,6 +185,8 @@ def api() -> Generator[MagicMock]:
             "set_zone_repeat",
             "set_zone_playlist_id",
             "play_playlist_id",
+            "play_subsonic_track",
+            "play_subsonic_album",
         ):
             setattr(client, name, AsyncMock(return_value=None))
         yield client

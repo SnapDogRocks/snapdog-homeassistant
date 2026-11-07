@@ -37,7 +37,7 @@
       "message": "El servidor SnapDog rechazó la solicitud: {error}"
     },
     "invalid_media_id": {
-      "message": "«{media_id}» no es una lista de reproducción ni una pista de SnapDog."
+      "message": "«{media_id}» no es una lista de reproducción, un álbum ni una pista de SnapDog."
     },
     "unknown_playlist": {
       "message": "El servidor SnapDog no tiene la lista de reproducción «{playlist_id}»."
