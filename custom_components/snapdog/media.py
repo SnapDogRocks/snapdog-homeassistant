@@ -18,7 +18,7 @@ are played by their own id, and the ids are percent-encoded the same way:
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Final
 from urllib.parse import quote, unquote
@@ -26,6 +26,13 @@ from urllib.parse import quote, unquote
 from homeassistant.components.media_player.browse_media import BrowseMedia
 from homeassistant.components.media_player.const import MediaClass, MediaType
 from pysnapdog import MediaTrack, Playlist, SearchItem, SearchKind
+
+type Thumbnails = Callable[[MediaType, str, str | None], str]
+"""Make the thumbnail url of an item from its media type, its media id and the id of its cover.
+
+The url points at the entity, which fetches the image from the server on request. Without one,
+the items have no thumbnail.
+"""
 
 ROOT_TITLE: Final = "SnapDog"
 ROOT_TYPE: Final = "library"
@@ -127,10 +134,12 @@ def source_labels(playlists: Iterable[Playlist]) -> dict[str, str]:
     }
 
 
-def browse_root(playlists: Iterable[Playlist]) -> BrowseMedia:
+def browse_root(playlists: Iterable[Playlist], thumbnails: Thumbnails | None = None) -> BrowseMedia:
     """The playlists of the server."""
+    playlists = list(playlists)
+    covered = {item.playlist_id for item in playlists if item.cover_art is not None}
     children = [
-        browse_playlist(playlist_id, name, expanded=False)
+        browse_playlist(playlist_id, name, thumbnails=thumbnails, cover=playlist_id in covered)
         for name, playlist_id in source_labels(playlists).items()
     ]
     return BrowseMedia(
@@ -150,31 +159,49 @@ def browse_playlist(
     name: str,
     tracks: Iterable[MediaTrack] | None = None,
     *,
-    expanded: bool,
+    thumbnails: Thumbnails | None = None,
+    cover: bool = False,
 ) -> BrowseMedia:
-    """A playlist, with its tracks as children when ``expanded``."""
+    """A playlist, with its tracks as children when ``tracks`` is given, an empty list included.
+
+    ``cover`` says that the server has a cover for the playlist. A track has its own.
+    """
+    media_id = str(MediaRef(playlist_id))
     return BrowseMedia(
         media_class=MediaClass.PLAYLIST,
-        media_content_id=str(MediaRef(playlist_id)),
+        media_content_id=media_id,
         media_content_type=MediaType.PLAYLIST,
         title=name,
         can_play=True,
         can_expand=True,
-        children=[browse_track(playlist_id, track) for track in tracks or ()] if expanded else None,
-        children_media_class=MediaClass.TRACK if expanded else None,
+        children=(
+            None
+            if tracks is None
+            else [browse_track(playlist_id, track, thumbnails) for track in tracks]
+        ),
+        children_media_class=None if tracks is None else MediaClass.TRACK,
+        thumbnail=thumbnails(MediaType.PLAYLIST, media_id, None) if thumbnails and cover else None,
     )
 
 
-def browse_track(playlist_id: str, track: MediaTrack) -> BrowseMedia:
+def browse_track(
+    playlist_id: str, track: MediaTrack, thumbnails: Thumbnails | None = None
+) -> BrowseMedia:
     """One track. It is played, not opened."""
     title = f"{track.artist} - {track.title}" if track.artist else track.title
+    media_id = str(MediaRef(playlist_id, track.track))
     return BrowseMedia(
         media_class=MediaClass.TRACK,
-        media_content_id=str(MediaRef(playlist_id, track.track)),
+        media_content_id=media_id,
         media_content_type=MediaType.TRACK,
         title=title,
         can_play=True,
         can_expand=False,
+        thumbnail=(
+            thumbnails(MediaType.TRACK, media_id, None)
+            if thumbnails and track.cover_art is not None
+            else None
+        ),
     )
 
 
@@ -199,11 +226,14 @@ def search_kinds(classes: Iterable[MediaClass | str] | None) -> list[SearchKind]
     return [kind for kind, media_class in _KIND_CLASSES.items() if media_class in wanted]
 
 
-def browse_search_item(item: SearchItem) -> BrowseMedia | None:
+def browse_search_item(
+    item: SearchItem, thumbnails: Thumbnails | None = None
+) -> BrowseMedia | None:
     """One search result, or ``None`` when it has no id to play it by.
 
     A result is played, not opened: an album and a playlist list their tracks in the browser only
-    through the playlist route, which a search result does not use.
+    through the playlist route, which a search result does not use. Its cover is read by the id the
+    search gives, because a track or an album has no place in a playlist to find it by.
     """
     target: MediaTarget
     match item.kind:
@@ -218,6 +248,7 @@ def browse_search_item(item: SearchItem) -> BrowseMedia | None:
         case _:
             return None
     title = f"{item.subtitle} - {item.title}" if item.subtitle else item.title
+    cover_id = item.cover_id
     return BrowseMedia(
         media_class=_KIND_CLASSES[item.kind],
         media_content_id=str(target),
@@ -225,4 +256,9 @@ def browse_search_item(item: SearchItem) -> BrowseMedia | None:
         title=title,
         can_play=True,
         can_expand=False,
+        thumbnail=(
+            thumbnails(target.media_type, str(target), cover_id)
+            if thumbnails and cover_id is not None
+            else None
+        ),
     )

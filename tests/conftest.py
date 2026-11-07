@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT
 from pysnapdog import (
+    Image,
     MediaTrack,
     Playlist,
     RepeatMode,
@@ -171,6 +172,9 @@ def api() -> Generator[MagicMock]:
                 make_media_track(id="tr-2", track=1, title="Blue in Green", artist=""),
             ]
         )
+        cover = Image(content=b"\x89PNG cover", content_type="image/png")
+        for name in ("playlist_cover", "track_cover", "media_cover"):
+            setattr(client, name, AsyncMock(return_value=cover))
         client.search = AsyncMock(return_value=SearchResult(items=(), next_offset=None))
         for name in (
             "play",
