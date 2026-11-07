@@ -5,11 +5,11 @@ from __future__ import annotations
 from collections.abc import Awaitable
 from typing import TypeVar
 
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pysnapdog import SnapDogError
+from pysnapdog import SnapDogError, SnapDogReadOnlyError
 
 from .const import CONF_SERVER_ID, DOMAIN
 from .coordinator import SnapDogCoordinator
@@ -54,6 +54,12 @@ async def request(call: Awaitable[_T]) -> _T:
     """Await a call to the server and turn its failure into a Home Assistant error."""
     try:
         return await call
+    except SnapDogReadOnlyError as err:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="read_only",
+            translation_placeholders={"error": str(err)},
+        ) from err
     except SnapDogError as err:
         raise HomeAssistantError(
             translation_domain=DOMAIN,

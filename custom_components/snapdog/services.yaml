@@ -1,0 +1,100 @@
+create_playlist:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    name:
+      required: true
+      example: Evening
+      selector:
+        text:
+    track_ids:
+      required: false
+      example: '["tr-1", "song/tr-2"]'
+      selector:
+        text:
+          multiple: true
+rename_playlist:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    playlist_id:
+      required: true
+      example: subsonic:42
+      selector:
+        text:
+    name:
+      required: true
+      example: Evening
+      selector:
+        text:
+add_tracks_to_playlist:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    playlist_id:
+      required: true
+      example: subsonic:42
+      selector:
+        text:
+    track_ids:
+      required: true
+      example: '["tr-1", "song/tr-2"]'
+      selector:
+        text:
+          multiple: true
+remove_tracks_from_playlist:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    playlist_id:
+      required: true
+      example: subsonic:42
+      selector:
+        text:
+    positions:
+      required: true
+      example: "[0, 3]"
+      selector:
+        object:
+replace_playlist_tracks:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    playlist_id:
+      required: true
+      example: subsonic:42
+      selector:
+        text:
+    track_ids:
+      required: true
+      example: '["tr-1", "song/tr-2"]'
+      selector:
+        text:
+          multiple: true
+delete_playlist:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: snapdog
+    playlist_id:
+      required: true
+      example: subsonic:42
+      selector:
+        text:
