@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from datetime import datetime
 from typing import Any
@@ -216,6 +217,35 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
     def media_duration(self) -> int | None:
         """Length of the current track in seconds."""
         return self._track.duration_ms // 1000 if self._track.duration_ms else None
+
+    @property
+    def media_image_hash(self) -> str | None:
+        """Changes with the track, so that Home Assistant and the browser fetch the cover again.
+
+        The server reports a ``cover_url`` only when the track has a cover. Its address stays the
+        same from track to track, so the hash takes the track in, too. Without a cover there is no
+        hash and no entity picture: the server would send its placeholder icon otherwise.
+        """
+        track = self._track
+        if not track.cover_url:
+            return None
+        key = "\0".join((track.cover_url, track.title, track.artist, track.album))
+        return hashlib.sha256(key.encode()).hexdigest()[:16]
+
+    async def async_get_media_image(self) -> tuple[bytes | None, str | None]:
+        """The cover of the track on air, read from the server.
+
+        The server needs the API key for it, so Home Assistant cannot hand the address to the
+        browser. A failure is a missing image and not an error of the player.
+        """
+        if self.media_image_hash is None:
+            return None, None
+        try:
+            image = await self.coordinator.api.zone_cover(self._zone)
+        except SnapDogError as err:
+            _LOGGER.debug("No cover for zone %s: %s", self._zone, err)
+            return None, None
+        return image.content, image.content_type
 
     @property
     def media_position(self) -> int | None:

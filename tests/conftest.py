@@ -173,7 +173,7 @@ def api() -> Generator[MagicMock]:
             ]
         )
         cover = Image(content=b"\x89PNG cover", content_type="image/png")
-        for name in ("playlist_cover", "track_cover", "media_cover"):
+        for name in ("zone_cover", "playlist_cover", "track_cover", "media_cover"):
             setattr(client, name, AsyncMock(return_value=cover))
         client.search = AsyncMock(return_value=SearchResult(items=(), next_offset=None))
         for name in (
