@@ -45,10 +45,18 @@
     "unknown_source": {
       "message": "De SnapDog-server heeft geen afspeellijst met de naam \"{source}\"."
     },
-    "read_only": "De SnapDog-server heeft de wijziging geweigerd ({error}). Afspeellijsten kunnen alleen worden gewijzigd als playlist_write op true staat in het gedeelte [subsonic] van de serverconfiguratie, en de radiolijst nooit.",
-    "unknown_server": "\"{entry}\" is geen SnapDog-server van deze Home Assistant.",
-    "server_required": "Geef de SnapDog-server op met config_entry_id: deze Home Assistant heeft er {count} geladen.",
-    "server_not_loaded": "De SnapDog-server \"{title}\" is niet ingesteld."
+    "read_only": {
+      "message": "De SnapDog-server heeft de wijziging geweigerd ({error}). Afspeellijsten kunnen alleen worden gewijzigd als playlist_write op true staat in het gedeelte [subsonic] van de serverconfiguratie, en de radiolijst nooit."
+    },
+    "unknown_server": {
+      "message": "\"{entry}\" is geen SnapDog-server van deze Home Assistant."
+    },
+    "server_required": {
+      "message": "Geef de SnapDog-server op met config_entry_id: deze Home Assistant heeft er {count} geladen."
+    },
+    "server_not_loaded": {
+      "message": "De SnapDog-server \"{title}\" is niet ingesteld."
+    }
   },
   "services": {
     "create_playlist": {

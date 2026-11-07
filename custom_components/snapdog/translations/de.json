@@ -45,10 +45,18 @@
     "unknown_source": {
       "message": "Der SnapDog-Server hat keine Playlist mit dem Namen „{source}“."
     },
-    "read_only": "Der SnapDog-Server hat die Änderung abgelehnt ({error}). Playlists lassen sich nur ändern, wenn playlist_write im Abschnitt [subsonic] der Serverkonfiguration auf true steht, die Radioliste nie.",
-    "unknown_server": "„{entry}“ ist kein SnapDog-Server dieser Home-Assistant-Instanz.",
-    "server_required": "Gib den SnapDog-Server mit config_entry_id an: In dieser Home-Assistant-Instanz sind {count} geladen.",
-    "server_not_loaded": "Der SnapDog-Server „{title}“ ist nicht eingerichtet."
+    "read_only": {
+      "message": "Der SnapDog-Server hat die Änderung abgelehnt ({error}). Playlists lassen sich nur ändern, wenn playlist_write im Abschnitt [subsonic] der Serverkonfiguration auf true steht, die Radioliste nie."
+    },
+    "unknown_server": {
+      "message": "„{entry}“ ist kein SnapDog-Server dieser Home-Assistant-Instanz."
+    },
+    "server_required": {
+      "message": "Gib den SnapDog-Server mit config_entry_id an: In dieser Home-Assistant-Instanz sind {count} geladen."
+    },
+    "server_not_loaded": {
+      "message": "Der SnapDog-Server „{title}“ ist nicht eingerichtet."
+    }
   },
   "services": {
     "create_playlist": {

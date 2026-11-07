@@ -45,10 +45,18 @@
     "unknown_source": {
       "message": "Le serveur SnapDog n'a pas de playlist nommée « {source} »."
     },
-    "read_only": "Le serveur SnapDog a refusé la modification ({error}). Les playlists ne peuvent être modifiées que si playlist_write vaut true dans la section [subsonic] de la configuration du serveur, et jamais la liste des radios.",
-    "unknown_server": "« {entry} » n'est pas un serveur SnapDog de ce Home Assistant.",
-    "server_required": "Indiquez le serveur SnapDog avec config_entry_id : ce Home Assistant en a {count} de chargés.",
-    "server_not_loaded": "Le serveur SnapDog « {title} » n'est pas configuré."
+    "read_only": {
+      "message": "Le serveur SnapDog a refusé la modification ({error}). Les playlists ne peuvent être modifiées que si playlist_write vaut true dans la section [subsonic] de la configuration du serveur, et jamais la liste des radios."
+    },
+    "unknown_server": {
+      "message": "« {entry} » n'est pas un serveur SnapDog de ce Home Assistant."
+    },
+    "server_required": {
+      "message": "Indiquez le serveur SnapDog avec config_entry_id : ce Home Assistant en a {count} de chargés."
+    },
+    "server_not_loaded": {
+      "message": "Le serveur SnapDog « {title} » n'est pas configuré."
+    }
   },
   "services": {
     "create_playlist": {
