@@ -44,6 +44,116 @@
     },
     "unknown_source": {
       "message": "De SnapDog-server heeft geen afspeellijst met de naam \"{source}\"."
+    },
+    "read_only": "De SnapDog-server heeft de wijziging geweigerd ({error}). Afspeellijsten kunnen alleen worden gewijzigd als playlist_write op true staat in het gedeelte [subsonic] van de serverconfiguratie, en de radiolijst nooit.",
+    "unknown_server": "\"{entry}\" is geen SnapDog-server van deze Home Assistant.",
+    "server_required": "Geef de SnapDog-server op met config_entry_id: deze Home Assistant heeft er {count} geladen.",
+    "server_not_loaded": "De SnapDog-server \"{title}\" is niet ingesteld."
+  },
+  "services": {
+    "create_playlist": {
+      "name": "Afspeellijst maken",
+      "description": "Maakt een afspeellijst op de mediaserver, desgewenst met nummers. Het antwoord bevat de playlist_id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "name": {
+          "name": "Naam",
+          "description": "Naam van de nieuwe afspeellijst."
+        },
+        "track_ids": {
+          "name": "Nummer-ID's",
+          "description": "Nummer-ID's van de mediaserver, of de song/…-media-ID's die een zoekopdracht geeft."
+        }
+      }
+    },
+    "rename_playlist": {
+      "name": "Afspeellijst hernoemen",
+      "description": "Hernoemt een afspeellijst van de mediaserver.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "playlist_id": {
+          "name": "Afspeellijst-ID",
+          "description": "De playlist_id van de afspeellijst, bijvoorbeeld subsonic:42."
+        },
+        "name": {
+          "name": "Nieuwe naam",
+          "description": "De nieuwe naam van de afspeellijst."
+        }
+      }
+    },
+    "add_tracks_to_playlist": {
+      "name": "Nummers toevoegen aan afspeellijst",
+      "description": "Voegt nummers toe aan het einde van een afspeellijst.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "playlist_id": {
+          "name": "Afspeellijst-ID",
+          "description": "De playlist_id van de afspeellijst, bijvoorbeeld subsonic:42."
+        },
+        "track_ids": {
+          "name": "Nummer-ID's",
+          "description": "Nummer-ID's van de mediaserver, of de song/…-media-ID's die een zoekopdracht geeft."
+        }
+      }
+    },
+    "remove_tracks_from_playlist": {
+      "name": "Nummers verwijderen uit afspeellijst",
+      "description": "Verwijdert de nummers op de opgegeven posities uit een afspeellijst.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "playlist_id": {
+          "name": "Afspeellijst-ID",
+          "description": "De playlist_id van de afspeellijst, bijvoorbeeld subsonic:42."
+        },
+        "positions": {
+          "name": "Posities",
+          "description": "Posities van de nummers, geteld vanaf 0, in de afspeellijst zoals die nu is."
+        }
+      }
+    },
+    "replace_playlist_tracks": {
+      "name": "Nummers van afspeellijst vervangen",
+      "description": "Stelt de volledige inhoud en volgorde van een afspeellijst in. Een lege lijst maakt hem leeg.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "playlist_id": {
+          "name": "Afspeellijst-ID",
+          "description": "De playlist_id van de afspeellijst, bijvoorbeeld subsonic:42."
+        },
+        "track_ids": {
+          "name": "Nummer-ID's",
+          "description": "Nummer-ID's van de mediaserver, of de song/…-media-ID's die een zoekopdracht geeft."
+        }
+      }
+    },
+    "delete_playlist": {
+      "name": "Afspeellijst verwijderen",
+      "description": "Verwijdert een afspeellijst van de mediaserver. Dit kan niet ongedaan worden gemaakt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "De SnapDog-server. Niet nodig als er maar één is."
+        },
+        "playlist_id": {
+          "name": "Afspeellijst-ID",
+          "description": "De playlist_id van de afspeellijst, bijvoorbeeld subsonic:42."
+        }
+      }
     }
   }
 }

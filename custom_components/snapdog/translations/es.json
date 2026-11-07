@@ -44,6 +44,116 @@
     },
     "unknown_source": {
       "message": "El servidor SnapDog no tiene ninguna lista de reproducción llamada «{source}»."
+    },
+    "read_only": "El servidor SnapDog rechazó el cambio ({error}). Las listas solo se pueden cambiar si playlist_write es true en la sección [subsonic] de la configuración del servidor, y la lista de radios nunca.",
+    "unknown_server": "«{entry}» no es un servidor SnapDog de este Home Assistant.",
+    "server_required": "Indica el servidor SnapDog con config_entry_id: este Home Assistant tiene {count} cargados.",
+    "server_not_loaded": "El servidor SnapDog «{title}» no está configurado."
+  },
+  "services": {
+    "create_playlist": {
+      "name": "Crear lista de reproducción",
+      "description": "Crea una lista de reproducción en el servidor de medios, con pistas si se desea. La respuesta contiene el playlist_id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "name": {
+          "name": "Nombre",
+          "description": "Nombre de la nueva lista."
+        },
+        "track_ids": {
+          "name": "ID de pistas",
+          "description": "ID de pistas del servidor de medios, o los ID de medios song/… que devuelve una búsqueda."
+        }
+      }
+    },
+    "rename_playlist": {
+      "name": "Renombrar lista de reproducción",
+      "description": "Cambia el nombre de una lista del servidor de medios.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "playlist_id": {
+          "name": "ID de la lista",
+          "description": "El playlist_id de la lista, por ejemplo subsonic:42."
+        },
+        "name": {
+          "name": "Nuevo nombre",
+          "description": "El nuevo nombre de la lista."
+        }
+      }
+    },
+    "add_tracks_to_playlist": {
+      "name": "Añadir pistas a una lista",
+      "description": "Añade pistas al final de una lista.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "playlist_id": {
+          "name": "ID de la lista",
+          "description": "El playlist_id de la lista, por ejemplo subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID de pistas",
+          "description": "ID de pistas del servidor de medios, o los ID de medios song/… que devuelve una búsqueda."
+        }
+      }
+    },
+    "remove_tracks_from_playlist": {
+      "name": "Quitar pistas de una lista",
+      "description": "Quita de una lista las pistas de las posiciones indicadas.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "playlist_id": {
+          "name": "ID de la lista",
+          "description": "El playlist_id de la lista, por ejemplo subsonic:42."
+        },
+        "positions": {
+          "name": "Posiciones",
+          "description": "Posiciones de las pistas, contadas desde 0, en la lista tal como está ahora."
+        }
+      }
+    },
+    "replace_playlist_tracks": {
+      "name": "Reemplazar las pistas de una lista",
+      "description": "Establece el contenido y el orden completos de una lista. Una lista vacía la vacía.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "playlist_id": {
+          "name": "ID de la lista",
+          "description": "El playlist_id de la lista, por ejemplo subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID de pistas",
+          "description": "ID de pistas del servidor de medios, o los ID de medios song/… que devuelve una búsqueda."
+        }
+      }
+    },
+    "delete_playlist": {
+      "name": "Eliminar lista de reproducción",
+      "description": "Elimina una lista del servidor de medios. No se puede deshacer.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Servidor",
+          "description": "El servidor SnapDog. No hace falta si solo hay uno."
+        },
+        "playlist_id": {
+          "name": "ID de la lista",
+          "description": "El playlist_id de la lista, por ejemplo subsonic:42."
+        }
+      }
     }
   }
 }

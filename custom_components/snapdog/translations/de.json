@@ -44,6 +44,116 @@
     },
     "unknown_source": {
       "message": "Der SnapDog-Server hat keine Playlist mit dem Namen „{source}“."
+    },
+    "read_only": "Der SnapDog-Server hat die Änderung abgelehnt ({error}). Playlists lassen sich nur ändern, wenn playlist_write im Abschnitt [subsonic] der Serverkonfiguration auf true steht, die Radioliste nie.",
+    "unknown_server": "„{entry}“ ist kein SnapDog-Server dieser Home-Assistant-Instanz.",
+    "server_required": "Gib den SnapDog-Server mit config_entry_id an: In dieser Home-Assistant-Instanz sind {count} geladen.",
+    "server_not_loaded": "Der SnapDog-Server „{title}“ ist nicht eingerichtet."
+  },
+  "services": {
+    "create_playlist": {
+      "name": "Playlist anlegen",
+      "description": "Legt eine Playlist auf dem Medienserver an, auf Wunsch mit Titeln. Die Antwort enthält die playlist_id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name der neuen Playlist."
+        },
+        "track_ids": {
+          "name": "Titel-IDs",
+          "description": "Titel-IDs des Medienservers oder die song/…-Medien-IDs, die eine Suche liefert."
+        }
+      }
+    },
+    "rename_playlist": {
+      "name": "Playlist umbenennen",
+      "description": "Benennt eine Playlist des Medienservers um.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "playlist_id": {
+          "name": "Playlist-ID",
+          "description": "Die playlist_id der Playlist, zum Beispiel subsonic:42."
+        },
+        "name": {
+          "name": "Neuer Name",
+          "description": "Der neue Name der Playlist."
+        }
+      }
+    },
+    "add_tracks_to_playlist": {
+      "name": "Titel zu Playlist hinzufügen",
+      "description": "Hängt Titel am Ende einer Playlist an.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "playlist_id": {
+          "name": "Playlist-ID",
+          "description": "Die playlist_id der Playlist, zum Beispiel subsonic:42."
+        },
+        "track_ids": {
+          "name": "Titel-IDs",
+          "description": "Titel-IDs des Medienservers oder die song/…-Medien-IDs, die eine Suche liefert."
+        }
+      }
+    },
+    "remove_tracks_from_playlist": {
+      "name": "Titel aus Playlist entfernen",
+      "description": "Entfernt die Titel an den angegebenen Positionen aus einer Playlist.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "playlist_id": {
+          "name": "Playlist-ID",
+          "description": "Die playlist_id der Playlist, zum Beispiel subsonic:42."
+        },
+        "positions": {
+          "name": "Positionen",
+          "description": "Positionen der Titel, ab 0 gezählt, in der Playlist wie sie jetzt ist."
+        }
+      }
+    },
+    "replace_playlist_tracks": {
+      "name": "Titel einer Playlist ersetzen",
+      "description": "Setzt Inhalt und Reihenfolge einer Playlist komplett neu. Eine leere Liste leert sie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "playlist_id": {
+          "name": "Playlist-ID",
+          "description": "Die playlist_id der Playlist, zum Beispiel subsonic:42."
+        },
+        "track_ids": {
+          "name": "Titel-IDs",
+          "description": "Titel-IDs des Medienservers oder die song/…-Medien-IDs, die eine Suche liefert."
+        }
+      }
+    },
+    "delete_playlist": {
+      "name": "Playlist löschen",
+      "description": "Löscht eine Playlist vom Medienserver. Das lässt sich nicht rückgängig machen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Server",
+          "description": "Der SnapDog-Server. Nicht nötig, wenn es nur einen gibt."
+        },
+        "playlist_id": {
+          "name": "Playlist-ID",
+          "description": "Die playlist_id der Playlist, zum Beispiel subsonic:42."
+        }
+      }
     }
   }
 }

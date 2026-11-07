@@ -44,6 +44,116 @@
     },
     "unknown_source": {
       "message": "Le serveur SnapDog n'a pas de playlist nommée « {source} »."
+    },
+    "read_only": "Le serveur SnapDog a refusé la modification ({error}). Les playlists ne peuvent être modifiées que si playlist_write vaut true dans la section [subsonic] de la configuration du serveur, et jamais la liste des radios.",
+    "unknown_server": "« {entry} » n'est pas un serveur SnapDog de ce Home Assistant.",
+    "server_required": "Indiquez le serveur SnapDog avec config_entry_id : ce Home Assistant en a {count} de chargés.",
+    "server_not_loaded": "Le serveur SnapDog « {title} » n'est pas configuré."
+  },
+  "services": {
+    "create_playlist": {
+      "name": "Créer une playlist",
+      "description": "Crée une playlist sur le serveur multimédia, avec des titres si on le souhaite. La réponse contient le playlist_id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "name": {
+          "name": "Nom",
+          "description": "Nom de la nouvelle playlist."
+        },
+        "track_ids": {
+          "name": "ID des titres",
+          "description": "ID de titres du serveur multimédia, ou les ID multimédias song/… renvoyés par une recherche."
+        }
+      }
+    },
+    "rename_playlist": {
+      "name": "Renommer une playlist",
+      "description": "Renomme une playlist du serveur multimédia.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "playlist_id": {
+          "name": "ID de la playlist",
+          "description": "Le playlist_id de la playlist, par exemple subsonic:42."
+        },
+        "name": {
+          "name": "Nouveau nom",
+          "description": "Le nouveau nom de la playlist."
+        }
+      }
+    },
+    "add_tracks_to_playlist": {
+      "name": "Ajouter des titres à une playlist",
+      "description": "Ajoute des titres à la fin d'une playlist.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "playlist_id": {
+          "name": "ID de la playlist",
+          "description": "Le playlist_id de la playlist, par exemple subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID des titres",
+          "description": "ID de titres du serveur multimédia, ou les ID multimédias song/… renvoyés par une recherche."
+        }
+      }
+    },
+    "remove_tracks_from_playlist": {
+      "name": "Retirer des titres d'une playlist",
+      "description": "Retire d'une playlist les titres aux positions indiquées.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "playlist_id": {
+          "name": "ID de la playlist",
+          "description": "Le playlist_id de la playlist, par exemple subsonic:42."
+        },
+        "positions": {
+          "name": "Positions",
+          "description": "Positions des titres, comptées à partir de 0, dans la playlist telle qu'elle est maintenant."
+        }
+      }
+    },
+    "replace_playlist_tracks": {
+      "name": "Remplacer les titres d'une playlist",
+      "description": "Définit le contenu et l'ordre complets d'une playlist. Une liste vide la vide.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "playlist_id": {
+          "name": "ID de la playlist",
+          "description": "Le playlist_id de la playlist, par exemple subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID des titres",
+          "description": "ID de titres du serveur multimédia, ou les ID multimédias song/… renvoyés par une recherche."
+        }
+      }
+    },
+    "delete_playlist": {
+      "name": "Supprimer une playlist",
+      "description": "Supprime une playlist du serveur multimédia. Cette action est irréversible.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serveur",
+          "description": "Le serveur SnapDog. Inutile s'il n'y en a qu'un."
+        },
+        "playlist_id": {
+          "name": "ID de la playlist",
+          "description": "Le playlist_id de la playlist, par exemple subsonic:42."
+        }
+      }
     }
   }
 }

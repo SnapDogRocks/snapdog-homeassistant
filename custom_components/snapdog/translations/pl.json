@@ -44,6 +44,116 @@
     },
     "unknown_source": {
       "message": "Serwer SnapDog nie ma listy odtwarzania o nazwie „{source}”."
+    },
+    "read_only": "Serwer SnapDog odrzucił zmianę ({error}). Listy odtwarzania można zmieniać tylko wtedy, gdy playlist_write ma wartość true w sekcji [subsonic] konfiguracji serwera, a listy radiowej nigdy.",
+    "unknown_server": "„{entry}” nie jest serwerem SnapDog tego Home Assistanta.",
+    "server_required": "Podaj serwer SnapDog w config_entry_id: w tym Home Assistancie załadowano ich {count}.",
+    "server_not_loaded": "Serwer SnapDog „{title}” nie jest skonfigurowany."
+  },
+  "services": {
+    "create_playlist": {
+      "name": "Utwórz listę odtwarzania",
+      "description": "Tworzy listę odtwarzania na serwerze multimediów, w razie potrzeby z utworami. Odpowiedź zawiera playlist_id.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "name": {
+          "name": "Nazwa",
+          "description": "Nazwa nowej listy odtwarzania."
+        },
+        "track_ids": {
+          "name": "ID utworów",
+          "description": "ID utworów z serwera multimediów lub ID multimediów song/… zwracane przez wyszukiwanie."
+        }
+      }
+    },
+    "rename_playlist": {
+      "name": "Zmień nazwę listy odtwarzania",
+      "description": "Zmienia nazwę listy odtwarzania na serwerze multimediów.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "playlist_id": {
+          "name": "ID listy",
+          "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
+        },
+        "name": {
+          "name": "Nowa nazwa",
+          "description": "Nowa nazwa listy odtwarzania."
+        }
+      }
+    },
+    "add_tracks_to_playlist": {
+      "name": "Dodaj utwory do listy odtwarzania",
+      "description": "Dodaje utwory na końcu listy odtwarzania.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "playlist_id": {
+          "name": "ID listy",
+          "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID utworów",
+          "description": "ID utworów z serwera multimediów lub ID multimediów song/… zwracane przez wyszukiwanie."
+        }
+      }
+    },
+    "remove_tracks_from_playlist": {
+      "name": "Usuń utwory z listy odtwarzania",
+      "description": "Usuwa z listy odtwarzania utwory na podanych pozycjach.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "playlist_id": {
+          "name": "ID listy",
+          "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
+        },
+        "positions": {
+          "name": "Pozycje",
+          "description": "Pozycje utworów, liczone od 0, na liście w jej obecnym stanie."
+        }
+      }
+    },
+    "replace_playlist_tracks": {
+      "name": "Zastąp utwory listy odtwarzania",
+      "description": "Ustawia pełną zawartość i kolejność listy odtwarzania. Pusta lista opróżnia ją.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "playlist_id": {
+          "name": "ID listy",
+          "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
+        },
+        "track_ids": {
+          "name": "ID utworów",
+          "description": "ID utworów z serwera multimediów lub ID multimediów song/… zwracane przez wyszukiwanie."
+        }
+      }
+    },
+    "delete_playlist": {
+      "name": "Usuń listę odtwarzania",
+      "description": "Usuwa listę odtwarzania z serwera multimediów. Tej operacji nie można cofnąć.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Serwer",
+          "description": "Serwer SnapDog. Niepotrzebny, gdy jest tylko jeden."
+        },
+        "playlist_id": {
+          "name": "ID listy",
+          "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
+        }
+      }
     }
   }
 }
