@@ -87,7 +87,7 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 |---|---|
 | 🔊 **One media player per zone** | Play, pause, stop, next and previous, seek (when the source allows it), volume, mute, shuffle and repeat. |
 | 🎵 **What is playing** | Title, artist, album, track, duration, position and the playlist. AirPlay and Spotify show as the app. |
-| 🗂️ **Browse and play** | The media browser lists the playlists of the server (the radio list included) and the tracks of a playlist. Play a playlist or a single track from it, or pick a playlist by name as the source of the zone. Playlists are addressed by their `playlist_id`, so a playlist that moves in the list is still found. Playlists, tracks and search results show their cover when the server has one. |
+| 🗂️ **Browse and play** | The media browser lists the playlists of the server (the radio list included) and the tracks of a playlist. Play a playlist or a single track from it, or pick a playlist by name as the source of the zone. Playlists are addressed by their `playlist_id`, so a playlist that moves in the list is still found. Playlists, tracks and search results show their cover when the server has one. The cover of the track on air is the entity picture of the zone. |
 | 🔎 **Search** | The search of the media browser finds tracks, albums, playlists and radio stations on the server (two characters at least, 20 results per kind). Play a result in the zone: a track or an album by its own id, a playlist or a station like in the browser. Needs a Subsonic server for tracks and albums. |
 | ⚡ **Push, not polling** | The WebSocket delivers every change. Entities are unavailable while it is down, and the whole state is read again when it comes back. |
 | 🧠 **No guessing** | What you see is what the server reports, never what was asked for. A command shows up in the state when the server confirms it. |
@@ -95,7 +95,7 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🏠 **Server and zones as devices** | One device for the server, one per zone. |
 
 Planned next: clients as devices with volume, latency, zone and speaker correction, the equalizer,
-services to manage playlists and the cover of the track that plays.
+services to manage playlists.
 
 ### Zone identity
 
