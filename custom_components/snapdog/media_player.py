@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any
 
@@ -23,7 +24,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 from pysnapdog import RepeatMode as SnapDogRepeat
-from pysnapdog import TrackMetadata, Zone
+from pysnapdog import SnapDogError, TrackMetadata, Zone
 
 from .const import CONF_SERVER_ID, DOMAIN, POSITION_TOLERANCE
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
@@ -44,6 +45,8 @@ from .media import (
 MIN_QUERY_LENGTH = 2
 
 PARALLEL_UPDATES = 1
+
+_LOGGER = logging.getLogger(__name__)
 
 _STATES = {
     "playing": MediaPlayerState.PLAYING,
@@ -304,15 +307,55 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
         """
         playlists = self.coordinator.data.playlists
         if not media_content_id:
-            return browse_root(playlists)
+            return browse_root(playlists, self.get_browse_image_url)
         ref = _media_ref(media_content_id, BrowseError)
         if not isinstance(ref, MediaRef) or ref.track is not None:
             raise _error(BrowseError, "invalid_media_id", media_id=media_content_id)
-        name = next((item.name for item in playlists if item.playlist_id == ref.playlist_id), None)
-        if name is None:
+        playlist = next((item for item in playlists if item.playlist_id == ref.playlist_id), None)
+        if playlist is None:
             raise _error(BrowseError, "unknown_playlist", playlist_id=ref.playlist_id)
         tracks = await request(self.coordinator.api.playlist_tracks_by_id(ref.playlist_id))
-        return browse_playlist(ref.playlist_id, name, tracks, expanded=True)
+        return browse_playlist(
+            ref.playlist_id,
+            playlist.name,
+            tracks,
+            thumbnails=self.get_browse_image_url,
+            cover=playlist.cover_art is not None,
+        )
+
+    async def async_get_browse_image(
+        self,
+        media_content_type: str,
+        media_content_id: str,
+        media_image_id: str | None = None,
+    ) -> tuple[bytes | None, str | None]:
+        """The cover of an item of the browser or of a search, read from the server.
+
+        A search result names its cover by ``media_image_id``. A playlist or a track of one has
+        none, so its cover is read by the index the playlist has now, found by ``playlist_id``.
+        Anything that fails or has no cover is a missing image and not an error of the player.
+        """
+        api = self.coordinator.api
+        try:
+            if media_image_id is not None:
+                image = await api.media_cover(media_image_id)
+            else:
+                ref = parse_media_id(media_content_id)
+                playlists = self.coordinator.data.playlists
+                if not isinstance(ref, MediaRef):
+                    return None, None
+                index = next((p.index for p in playlists if p.playlist_id == ref.playlist_id), None)
+                if index is None:
+                    return None, None
+                image = await (
+                    api.playlist_cover(index)
+                    if ref.track is None
+                    else api.track_cover(index, ref.track)
+                )
+        except (ValueError, SnapDogError) as err:
+            _LOGGER.debug("No cover for %s: %s", media_content_id, err)
+            return None, None
+        return image.content, image.content_type
 
     async def async_play_media(
         self, media_type: MediaType | str, media_id: str, **kwargs: Any
@@ -348,7 +391,7 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
         if len(text) < MIN_QUERY_LENGTH or not kinds:
             return SearchMedia(result=[])
         found = await request(self.coordinator.api.search(text, kinds=kinds))
-        results = (browse_search_item(item) for item in found.items)
+        results = (browse_search_item(item, self.get_browse_image_url) for item in found.items)
         return SearchMedia(result=[item for item in results if item is not None])
 
 
