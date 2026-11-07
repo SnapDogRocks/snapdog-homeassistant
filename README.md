@@ -95,8 +95,8 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese. |
 | 🏠 **Server and zones as devices** | One device for the server, one per zone. |
 
-Planned next: clients as devices with volume, latency, zone and speaker correction, the equalizer,
-services to manage playlists.
+Planned next: clients as devices with volume, latency, zone and speaker correction, and the
+equalizer.
 
 ### Zone identity
 
