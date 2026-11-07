@@ -148,8 +148,8 @@ async def test_the_browser_follows_a_moved_playlist(
 @pytest.mark.parametrize(
     ("content_id", "text"),
     [
-        ("nonsense", "is not a playlist or track"),
-        ("track/subsonic%3A42/0", "is not a playlist or track"),
+        ("nonsense", "is not a playlist, album or track"),
+        ("track/subsonic%3A42/0", "is not a playlist, album or track"),
         ("playlist/subsonic%3A999", "has no playlist"),
     ],
 )

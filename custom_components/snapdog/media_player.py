@@ -6,7 +6,11 @@ from datetime import datetime
 from typing import Any
 
 from homeassistant.components.media_player import MediaPlayerEntity
-from homeassistant.components.media_player.browse_media import BrowseMedia
+from homeassistant.components.media_player.browse_media import (
+    BrowseMedia,
+    SearchMedia,
+    SearchMediaQuery,
+)
 from homeassistant.components.media_player.const import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -24,7 +28,20 @@ from pysnapdog import TrackMetadata, Zone
 from .const import CONF_SERVER_ID, DOMAIN, POSITION_TOLERANCE
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import SnapDogEntity, request
-from .media import MediaRef, browse_playlist, browse_root, parse_media_id, source_labels
+from .media import (
+    AlbumRef,
+    MediaRef,
+    MediaTarget,
+    SongRef,
+    browse_playlist,
+    browse_root,
+    browse_search_item,
+    parse_media_id,
+    search_kinds,
+    source_labels,
+)
+
+MIN_QUERY_LENGTH = 2
 
 PARALLEL_UPDATES = 1
 
@@ -59,6 +76,7 @@ _BASE_FEATURES = (
     | MediaPlayerEntityFeature.SHUFFLE_SET
     | MediaPlayerEntityFeature.REPEAT_SET
     | MediaPlayerEntityFeature.BROWSE_MEDIA
+    | MediaPlayerEntityFeature.SEARCH_MEDIA
     | MediaPlayerEntityFeature.PLAY_MEDIA
     | MediaPlayerEntityFeature.SELECT_SOURCE
 )
@@ -288,7 +306,7 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
         if not media_content_id:
             return browse_root(playlists)
         ref = _media_ref(media_content_id, BrowseError)
-        if ref.track is not None:
+        if not isinstance(ref, MediaRef) or ref.track is not None:
             raise _error(BrowseError, "invalid_media_id", media_id=media_content_id)
         name = next((item.name for item in playlists if item.playlist_id == ref.playlist_id), None)
         if name is None:
@@ -299,15 +317,39 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
     async def async_play_media(
         self, media_type: MediaType | str, media_id: str, **kwargs: Any
     ) -> None:
-        """Play a playlist, or one track of it, by the media id the browser hands out.
+        """Play what the browser or a search hands out: a playlist, a track or an album.
 
-        The server switches the zone to the playlist and starts at the track. The request names
-        the playlist by its ``playlist_id``, so a playlist that moved meanwhile is still found.
+        A playlist, or a track of it, is played by its ``playlist_id``: the server switches the
+        zone to the playlist and starts at the track, and a playlist that moved meanwhile is still
+        found. A track or an album of a search is in no playlist and is played by its own id.
         """
         ref = _media_ref(media_id, ServiceValidationError)
         if ref.media_type != media_type:
             raise _error(ServiceValidationError, "invalid_media_id", media_id=media_id)
-        await request(self.coordinator.api.play_playlist_id(self._zone, ref.playlist_id, ref.track))
+        api = self.coordinator.api
+        match ref:
+            case SongRef(track_id):
+                await request(api.play_subsonic_track(self._zone, track_id))
+            case AlbumRef(album_id):
+                await request(api.play_subsonic_album(self._zone, album_id))
+            case MediaRef(playlist_id, track):
+                await request(api.play_playlist_id(self._zone, playlist_id, track))
+
+    async def async_search_media(self, query: SearchMediaQuery) -> SearchMedia:
+        """Search the tracks, albums, playlists and radio stations of the server.
+
+        The server needs two characters, so a shorter text finds nothing instead of failing while
+        someone is still typing. The media classes narrow the kinds, the media type is ignored.
+        A page holds the server's default of 20 results per kind, and a result without the id to
+        play it by is left out.
+        """
+        text = query.search_query.strip()
+        kinds = search_kinds(query.media_filter_classes)
+        if len(text) < MIN_QUERY_LENGTH or not kinds:
+            return SearchMedia(result=[])
+        found = await request(self.coordinator.api.search(text, kinds=kinds))
+        results = (browse_search_item(item) for item in found.items)
+        return SearchMedia(result=[item for item in results if item is not None])
 
 
 def _error(error: type[HomeAssistantError], key: str, **placeholders: str) -> HomeAssistantError:
@@ -317,7 +359,7 @@ def _error(error: type[HomeAssistantError], key: str, **placeholders: str) -> Ho
     )
 
 
-def _media_ref(media_id: str, error: type[HomeAssistantError]) -> MediaRef:
+def _media_ref(media_id: str, error: type[HomeAssistantError]) -> MediaTarget:
     """Read a media id, or fail with ``error`` when it is not one of ours."""
     try:
         return parse_media_id(media_id)
