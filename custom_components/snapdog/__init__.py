@@ -10,6 +10,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_SERVER_ID, DOMAIN
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
+from .layout import ZoneLayout
 from .services import async_register_services
 
 PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
@@ -44,3 +45,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: SnapDogConfigEntry) -> b
 async def async_unload_entry(hass: HomeAssistant, entry: SnapDogConfigEntry) -> bool:
     """Unload the platforms. The listener stops through ``async_on_unload``."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: SnapDogConfigEntry) -> None:
+    """Forget the remembered zone positions and their repair issue with the entry."""
+    await ZoneLayout(hass, entry.entry_id, entry.title).async_remove()
