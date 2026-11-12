@@ -53,4 +53,11 @@ def test_every_translation_key_the_code_uses_exists() -> None:
     source = "".join(path.read_text() for path in CODE.glob("*.py"))
     used = set(re.findall(r'(?:translation_key=|_error\([\w.]+, )"(\w+)"', source))
     assert used
-    assert used <= set(ENGLISH["exceptions"]), used - set(ENGLISH["exceptions"])
+    known = set(ENGLISH["exceptions"]) | set(ENGLISH["issues"])
+    assert used <= known, used - known
+
+
+def test_every_issue_has_a_title_and_a_description() -> None:
+    """A repair issue without both texts would show its key."""
+    for key, value in ENGLISH["issues"].items():
+        assert set(value) == {"title", "description"}, key

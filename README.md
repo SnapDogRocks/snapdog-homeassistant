@@ -105,6 +105,13 @@ paths, MQTT topics and KNX addresses are. New `[[zone]]` blocks go at the end of
 Inserting, deleting or reordering a block moves the zones behind it, and Home Assistant then sees
 different zones under the old entities.
 
+The integration notices this. It remembers the name at each position, and when a zone with a
+unique name shows up at another position at the next start or reconnect, it raises a repair issue
+that lists the zones and their old and new positions. It only warns. It does not move history,
+areas or automations, and it cannot tell a renamed zone from a new one, so a rename combined with a
+move goes unnoticed. Restore the old order, or check the areas and automations of the listed zones,
+and dismiss the issue.
+
 ### Good to know
 
 - **Mute needs a connected client in the zone.** SnapDog mutes through the Snapcast group, which

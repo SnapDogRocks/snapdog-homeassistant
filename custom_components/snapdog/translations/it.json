@@ -58,6 +58,12 @@
       "message": "Il server SnapDog «{title}» non è configurato."
     }
   },
+  "issues": {
+    "zone_order_changed": {
+      "title": "Le zone SnapDog hanno cambiato posizione",
+      "description": "Le zone di {server} non si trovano più nella stessa posizione nella configurazione del server: {zones}. Home Assistant riconosce una zona dalla sua posizione, quindi cronologia, aree e automazioni di queste entità ora appartengono a un'altra zona. Ripristina l'ordine precedente dei blocchi `[[zone]]` in `snapdog.toml` e riavvia il server, oppure controlla le aree e le automazioni delle zone indicate. Ignora questo problema quando hai finito."
+    }
+  },
   "services": {
     "create_playlist": {
       "name": "Crea playlist",

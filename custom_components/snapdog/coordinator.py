@@ -36,6 +36,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
+from .layout import ZoneLayout
 
 type SnapDogConfigEntry = ConfigEntry[SnapDogCoordinator]
 
@@ -73,6 +74,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             verify_tls=entry.data[CONF_VERIFY_TLS],
         )
         self.connected = False
+        self.layout = ZoneLayout(hass, entry.entry_id, entry.title)
         self._listener = SnapDogListener(
             self.api,
             on_event=self._on_event,
@@ -88,6 +90,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             raise ConfigEntryAuthFailed from err
         except SnapDogError as err:
             raise ConfigEntryNotReady(f"cannot read the SnapDog server: {err}") from err
+        await self.layout.async_check(self.data.zones)
         self._listener.start()
 
     async def async_stop(self) -> None:
@@ -108,6 +111,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
 
     async def _on_connected(self) -> None:
         self.async_set_updated_data(await self._load())
+        await self.layout.async_check(self.data.zones)
         if not self.connected:
             LOGGER.info("Connected to the SnapDog server")
         self.connected = True

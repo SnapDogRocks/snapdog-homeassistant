@@ -58,6 +58,12 @@
       "message": "Serwer SnapDog „{title}” nie jest skonfigurowany."
     }
   },
+  "issues": {
+    "zone_order_changed": {
+      "title": "Strefy SnapDog zmieniły pozycję",
+      "description": "Strefy serwera {server} nie znajdują się już na tych samych pozycjach w konfiguracji serwera: {zones}. Home Assistant rozpoznaje strefę po jej pozycji, dlatego historia, obszary i automatyzacje tych encji należą teraz do innej strefy. Przywróć dawną kolejność bloków `[[zone]]` w `snapdog.toml` i uruchom serwer ponownie albo sprawdź obszary i automatyzacje wymienionych stref. Zignoruj ten problem, gdy to zrobisz."
+    }
+  },
   "services": {
     "create_playlist": {
       "name": "Utwórz listę odtwarzania",
