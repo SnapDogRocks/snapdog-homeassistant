@@ -346,3 +346,12 @@ async def test_a_zone_without_a_playlist_keeps_none(
     track = coordinator.data.tracks[1]
     assert track.playlist_index is None
     assert track.playlist_id is None
+
+
+async def test_the_sample_rate_of_the_track_follows_the_event(
+    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
+) -> None:
+    coordinator = await setup(hass, entry, listener)
+    await listener.call_args.kwargs["on_event"](zone_changed(sample_rate=48_000))
+    await hass.async_block_till_done()
+    assert coordinator.data.tracks[1].sample_rate == 48_000

@@ -478,3 +478,16 @@ async def test_the_latency_follows_the_event_of_the_server(
     # A server that does not send the field leaves the value as it is.
     await send(hass, listener, event(volume=35))
     assert hass.states.get(LATENCY).state == "-80"  # type: ignore[union-attr]
+
+
+async def test_a_rename_in_the_web_interface_reaches_the_device(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await send(hass, listener, event(name="Pantry"))
+    device = device_of(hass)
+    assert device is not None
+    assert device.name == "Pantry"
+    # A server that does not send the name leaves it as it is.
+    await send(hass, listener, event(volume=35))
+    assert device_of(hass).name == "Pantry"  # type: ignore[union-attr]

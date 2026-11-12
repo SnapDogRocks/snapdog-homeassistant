@@ -233,6 +233,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     disc_number=event.disc_number,
                     cover_url=event.cover_url,
                     bitrate_kbps=event.bitrate_kbps,
+                    sample_rate=event.sample_rate,
                     content_type=event.content_type,
                     playlist_index=event.playlist_index,
                     playlist_id=event.playlist_id,
@@ -260,6 +261,10 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                 )
                 if event.latency_ms is not None:
                     data.client_latency[event.client] = event.latency_ms
+                if event.name:
+                    data.clients[event.client] = dataclasses.replace(
+                        data.clients[event.client], name=event.name
+                    )
                 if event.is_snapdog and event.client not in data.client_eq:
                     # A SnapDog client that connected after the last read: its equalizer and
                     # speaker correction were not there to read before.
