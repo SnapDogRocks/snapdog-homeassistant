@@ -12,7 +12,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from pysnapdog import ClientStateChanged, SnapDogConnectionError
+from pysnapdog import (
+    ClientEqChanged,
+    ClientSpeakerChanged,
+    ClientStateChanged,
+    SnapDogConnectionError,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import CONF_SERVER_ID, DOMAIN
@@ -467,3 +472,54 @@ async def test_set_client_eq_band_counts_from_one(
             {ATTR_ENTITY_ID: VOLUME, "band": 11, **BAND},
             blocking=True,
         )
+
+
+async def test_the_latency_follows_the_event_of_the_server(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await send(hass, listener, event(latency_ms=-80))
+    assert hass.states.get(LATENCY).state == "-80"  # type: ignore[union-attr]
+    # A server that does not send the field leaves the value as it is.
+    await send(hass, listener, event(volume=35))
+    assert hass.states.get(LATENCY).state == "-80"  # type: ignore[union-attr]
+
+
+async def test_a_rename_in_the_web_interface_reaches_the_device(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await send(hass, listener, event(name="Pantry"))
+    device = device_of(hass)
+    assert device is not None
+    assert device.name == "Pantry"
+    # A server that does not send the name leaves it as it is.
+    await send(hass, listener, event(volume=35))
+    assert device_of(hass).name == "Pantry"  # type: ignore[union-attr]
+
+
+async def test_the_equalizer_and_the_speaker_follow_the_events_of_the_server(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    on_event = listener.call_args.kwargs["on_event"]
+
+    await on_event(ClientEqChanged(client=1, config=make_eq(enabled=False, preset="Bass")))
+    await hass.async_block_till_done()
+    assert hass.states.get(EQ).state == STATE_OFF  # type: ignore[union-attr]
+    assert hass.states.get(PRESET).state == "Bass"  # type: ignore[union-attr]
+
+    await on_event(ClientSpeakerChanged(client=1, config=make_eq(preset="KEF LS50")))
+    await hass.async_block_till_done()
+    assert hass.states.get(SPEAKER).state == "KEF LS50"  # type: ignore[union-attr]
+
+
+async def test_an_equalizer_event_about_another_client_is_ignored(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await listener.call_args.kwargs["on_event"](
+        ClientEqChanged(client=9, config=make_eq(enabled=False))
+    )
+    await hass.async_block_till_done()
+    assert hass.states.get(EQ).state == STATE_ON  # type: ignore[union-attr]

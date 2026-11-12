@@ -15,6 +15,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pysnapdog import (
     Client,
+    ClientEqChanged,
+    ClientSpeakerChanged,
     ClientStateChanged,
     EqConfig,
     Event,
@@ -233,6 +235,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     disc_number=event.disc_number,
                     cover_url=event.cover_url,
                     bitrate_kbps=event.bitrate_kbps,
+                    sample_rate=event.sample_rate,
                     content_type=event.content_type,
                     playlist_index=event.playlist_index,
                     playlist_id=event.playlist_id,
@@ -247,22 +250,9 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                 data.zones[event.zone] = dataclasses.replace(
                     data.zones[event.zone], volume=event.volume, muted=event.muted
                 )
-            case ClientStateChanged():
-                if event.client not in data.clients:
+            case ClientStateChanged() | ClientEqChanged() | ClientSpeakerChanged():
+                if not await self._fold_client_event(event, data):
                     return
-                data.clients[event.client] = dataclasses.replace(
-                    data.clients[event.client],
-                    volume=event.volume,
-                    muted=event.muted,
-                    connected=event.connected,
-                    zone_index=event.zone,
-                    is_snapdog=event.is_snapdog,
-                )
-                if event.is_snapdog and event.client not in data.client_eq:
-                    # A SnapDog client that connected after the last read: its equalizer and
-                    # speaker correction were not there to read before.
-                    await self._read_client_settings(data, event.client, data.clients[event.client])
-                    await self._read_eq_catalogue(data)
             case PlaylistsChanged():
                 # An index, a name or the whole list may have changed. Keep the old list when
                 # the server cannot be read right now, the next event or reconnect reloads it.
@@ -274,3 +264,36 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             case _:
                 return
         self.async_set_updated_data(data)
+
+    async def _fold_client_event(
+        self, event: ClientStateChanged | ClientEqChanged | ClientSpeakerChanged, data: SnapDogData
+    ) -> bool:
+        """Fold an event about a client into the state. ``False`` when the client is unknown."""
+        if event.client not in data.clients:
+            return False
+        match event:
+            case ClientStateChanged():
+                data.clients[event.client] = dataclasses.replace(
+                    data.clients[event.client],
+                    volume=event.volume,
+                    muted=event.muted,
+                    connected=event.connected,
+                    zone_index=event.zone,
+                    is_snapdog=event.is_snapdog,
+                )
+                if event.latency_ms is not None:
+                    data.client_latency[event.client] = event.latency_ms
+                if event.name:
+                    data.clients[event.client] = dataclasses.replace(
+                        data.clients[event.client], name=event.name
+                    )
+                if event.is_snapdog and event.client not in data.client_eq:
+                    # A SnapDog client that connected after the last read: its equalizer and
+                    # speaker correction were not there to read before.
+                    await self._read_client_settings(data, event.client, data.clients[event.client])
+                    await self._read_eq_catalogue(data)
+            case ClientEqChanged():
+                data.client_eq[event.client] = event.config
+            case ClientSpeakerChanged():
+                data.client_speaker[event.client] = event.config
+        return True

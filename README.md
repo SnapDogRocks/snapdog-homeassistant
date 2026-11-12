@@ -97,9 +97,9 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🔈 **Client entities** | Volume (up to the maximum the server allows for the client), mute, latency, the zone the client plays in (choosing another one moves it) and whether it is connected. A SnapDog client also has the equalizer switch, the equalizer preset and the speaker correction. A plain Snapcast client has neither. |
 | 🎚️ **Client actions** | `snapdog.move_client`, `rename_client`, `apply_speaker_profile`, `set_client_eq` and `set_client_eq_band`. Target the volume entity or the device of the client. Bands of `set_client_eq_band` count from 1. |
 
-The server sends no event for the latency, the equalizer and the speaker correction of a client.
-They are read at every connect and follow what is changed through Home Assistant. A change made
-in the web interface shows up after the next reconnect.
+The latency, the name, the equalizer and the speaker correction of a client follow the events of
+the server, so a change made in the web interface shows up at once. They are read once at every
+connect, in case an event was missed while the connection was down.
 
 Planned next: server entities (version, counts, update, KNX programming mode), the presence and
 equalizer entities of the zones and the `event` for playback errors.
