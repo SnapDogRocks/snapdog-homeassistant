@@ -100,8 +100,6 @@ delete_playlist:
         text:
 move_client:
   target:
-    device:
-      integration: snapdog
     entity:
       integration: snapdog
       domain: number
@@ -116,8 +114,6 @@ move_client:
           mode: box
 rename_client:
   target:
-    device:
-      integration: snapdog
     entity:
       integration: snapdog
       domain: number
@@ -129,9 +125,6 @@ rename_client:
         text:
 apply_speaker_profile:
   target:
-    device:
-      integration: snapdog
-      model: SnapDog client
     entity:
       integration: snapdog
       domain: number
@@ -143,9 +136,6 @@ apply_speaker_profile:
         text:
 set_client_eq:
   target:
-    device:
-      integration: snapdog
-      model: SnapDog client
     entity:
       integration: snapdog
       domain: number
@@ -161,9 +151,6 @@ set_client_eq:
         object:
 set_client_eq_band:
   target:
-    device:
-      integration: snapdog
-      model: SnapDog client
     entity:
       integration: snapdog
       domain: number
