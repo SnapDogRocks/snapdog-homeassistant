@@ -93,10 +93,23 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | ⚡ **Push, not polling** | The WebSocket delivers every change. Entities are unavailable while it is down, and the whole state is read again when it comes back. |
 | 🧠 **No guessing** | What you see is what the server reports, never what was asked for. A command shows up in the state when the server confirms it. |
 | 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese. |
-| 🏠 **Server and zones as devices** | One device for the server, one per zone. |
+| 🏠 **Server, zones and clients as devices** | One device for the server, one per zone and one per client (speaker). |
+| 🔈 **Client entities** | Volume (up to the maximum the server allows for the client), mute, latency, the zone the client plays in (choosing another one moves it) and whether it is connected. A SnapDog client also has the equalizer switch, the equalizer preset and the speaker correction. A plain Snapcast client has neither. |
+| 🎚️ **Client actions** | `snapdog.move_client`, `rename_client`, `apply_speaker_profile`, `set_client_eq` and `set_client_eq_band`. Target the volume entity or the device of the client. Bands of `set_client_eq_band` count from 1. |
 
-Planned next: clients as devices with volume, latency, zone and speaker correction, and the
-equalizer.
+The server sends no event for the latency, the equalizer and the speaker correction of a client.
+They are read at every connect and follow what is changed through Home Assistant. A change made
+in the web interface shows up after the next reconnect.
+
+Planned next: server entities (version, counts, update, KNX programming mode), the presence and
+equalizer entities of the zones and the `event` for playback errors.
+
+### Client identity
+
+A client is identified by the server and its **MAC address**, not by its position in
+`snapdog.toml`. Inserting, deleting or reordering `[[client]]` blocks leaves history, areas and
+automations with the speaker. A client whose block is removed loses its device. Changing the MAC
+of a block makes it a new device.
 
 ### Zone identity
 
