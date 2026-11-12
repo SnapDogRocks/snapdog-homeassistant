@@ -56,6 +56,27 @@
     },
     "server_not_loaded": {
       "message": "The SnapDog server \"{title}\" is not set up."
+    },
+    "client_gone": {
+      "message": "The SnapDog server no longer has the client with the MAC address {mac}."
+    },
+    "unknown_zone": {
+      "message": "The SnapDog server has no zone {zone}."
+    },
+    "not_snapdog_client": {
+      "message": "\"{name}\" is a plain Snapcast client. Only a SnapDog client has an equalizer and a speaker correction."
+    },
+    "nothing_to_change": {
+      "message": "Give enabled, bands or both."
+    },
+    "eq_unknown": {
+      "message": "The equalizer of \"{name}\" has not been read from the server yet."
+    },
+    "unknown_band": {
+      "message": "Band {band} does not exist: the equalizer has {count} bands."
+    },
+    "unknown_option": {
+      "message": "The server does not offer \"{option}\"."
     }
   },
   "issues": {
@@ -167,6 +188,110 @@
           "name": "Playlist ID",
           "description": "The playlist_id of the playlist, for example subsonic:42."
         }
+      }
+    },
+    "move_client": {
+      "name": "Move client",
+      "description": "Put a client into another zone.",
+      "fields": {
+        "zone": {
+          "name": "Zone",
+          "description": "The number of the zone, counted as in snapdog.toml from 1."
+        }
+      }
+    },
+    "rename_client": {
+      "name": "Rename client",
+      "description": "Give a client another name.",
+      "fields": {
+        "name": {
+          "name": "New name",
+          "description": "The new name of the client."
+        }
+      }
+    },
+    "apply_speaker_profile": {
+      "name": "Apply speaker profile",
+      "description": "Apply the correction of a known speaker to a SnapDog client.",
+      "fields": {
+        "speaker": {
+          "name": "Speaker",
+          "description": "The name of the speaker profile, as the speaker correction select offers it."
+        }
+      }
+    },
+    "set_client_eq": {
+      "name": "Set client equalizer",
+      "description": "Switch the equalizer of a SnapDog client or replace all its bands.",
+      "fields": {
+        "enabled": {
+          "name": "Enabled",
+          "description": "Switch the equalizer on or off."
+        },
+        "bands": {
+          "name": "Bands",
+          "description": "All bands, in order. Each has freq (Hz), gain (dB), q and type (low_shelf, high_shelf, peaking, low_pass or high_pass)."
+        }
+      }
+    },
+    "set_client_eq_band": {
+      "name": "Set client equalizer band",
+      "description": "Change one band of the equalizer of a SnapDog client.",
+      "fields": {
+        "band": {
+          "name": "Band",
+          "description": "The number of the band, counted from 1."
+        },
+        "freq": {
+          "name": "Frequency",
+          "description": "The center or corner frequency in Hz."
+        },
+        "gain": {
+          "name": "Gain",
+          "description": "The gain in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "The quality factor."
+        },
+        "type": {
+          "name": "Type",
+          "description": "The filter shape: low_shelf, high_shelf, peaking, low_pass or high_pass."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": {
+        "name": "Connected"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      },
+      "latency": {
+        "name": "Latency"
+      }
+    },
+    "select": {
+      "zone": {
+        "name": "Zone"
+      },
+      "speaker": {
+        "name": "Speaker correction"
+      },
+      "eq_preset": {
+        "name": "EQ preset"
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Mute"
+      },
+      "eq": {
+        "name": "Equalizer"
       }
     }
   }

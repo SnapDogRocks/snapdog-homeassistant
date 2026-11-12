@@ -56,6 +56,27 @@
     },
     "server_not_loaded": {
       "message": "Il server SnapDog «{title}» non è configurato."
+    },
+    "client_gone": {
+      "message": "Il server SnapDog non ha più il client con l'indirizzo MAC {mac}."
+    },
+    "unknown_zone": {
+      "message": "Il server SnapDog non ha la zona {zone}."
+    },
+    "not_snapdog_client": {
+      "message": "«{name}» è un semplice client Snapcast. Solo un client SnapDog ha un equalizzatore e una correzione dell'altoparlante."
+    },
+    "nothing_to_change": {
+      "message": "Indica enabled, bands o entrambi."
+    },
+    "eq_unknown": {
+      "message": "L'equalizzatore di «{name}» non è ancora stato letto dal server."
+    },
+    "unknown_band": {
+      "message": "La banda {band} non esiste: l'equalizzatore ha {count} bande."
+    },
+    "unknown_option": {
+      "message": "Il server non offre «{option}»."
     }
   },
   "issues": {
@@ -167,6 +188,110 @@
           "name": "ID della playlist",
           "description": "Il playlist_id della playlist, ad esempio subsonic:42."
         }
+      }
+    },
+    "move_client": {
+      "name": "Sposta client",
+      "description": "Mette un client in un'altra zona.",
+      "fields": {
+        "zone": {
+          "name": "Zona",
+          "description": "Il numero della zona, contato da 1 come in snapdog.toml."
+        }
+      }
+    },
+    "rename_client": {
+      "name": "Rinomina client",
+      "description": "Dà un altro nome a un client.",
+      "fields": {
+        "name": {
+          "name": "Nuovo nome",
+          "description": "Il nuovo nome del client."
+        }
+      }
+    },
+    "apply_speaker_profile": {
+      "name": "Applica profilo altoparlante",
+      "description": "Applica la correzione di un altoparlante noto a un client SnapDog.",
+      "fields": {
+        "speaker": {
+          "name": "Altoparlante",
+          "description": "Il nome del profilo dell'altoparlante, come lo offre la selezione della correzione dell'altoparlante."
+        }
+      }
+    },
+    "set_client_eq": {
+      "name": "Imposta l'equalizzatore del client",
+      "description": "Attiva o disattiva l'equalizzatore di un client SnapDog o sostituisce tutte le sue bande.",
+      "fields": {
+        "enabled": {
+          "name": "Attivo",
+          "description": "Attiva o disattiva l'equalizzatore."
+        },
+        "bands": {
+          "name": "Bande",
+          "description": "Tutte le bande, in ordine. Ognuna ha freq (Hz), gain (dB), q e type (low_shelf, high_shelf, peaking, low_pass o high_pass)."
+        }
+      }
+    },
+    "set_client_eq_band": {
+      "name": "Imposta una banda dell'equalizzatore del client",
+      "description": "Modifica una banda dell'equalizzatore di un client SnapDog.",
+      "fields": {
+        "band": {
+          "name": "Banda",
+          "description": "Il numero della banda, contato da 1."
+        },
+        "freq": {
+          "name": "Frequenza",
+          "description": "La frequenza centrale o di taglio in Hz."
+        },
+        "gain": {
+          "name": "Guadagno",
+          "description": "Il guadagno in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Il fattore di qualità."
+        },
+        "type": {
+          "name": "Tipo",
+          "description": "La forma del filtro: low_shelf, high_shelf, peaking, low_pass o high_pass."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": {
+        "name": "Connesso"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      },
+      "latency": {
+        "name": "Latenza"
+      }
+    },
+    "select": {
+      "zone": {
+        "name": "Zona"
+      },
+      "speaker": {
+        "name": "Correzione dell'altoparlante"
+      },
+      "eq_preset": {
+        "name": "Preset EQ"
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Muto"
+      },
+      "eq": {
+        "name": "Equalizzatore"
       }
     }
   }

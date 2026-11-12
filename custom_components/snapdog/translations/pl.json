@@ -56,6 +56,27 @@
     },
     "server_not_loaded": {
       "message": "Serwer SnapDog „{title}” nie jest skonfigurowany."
+    },
+    "client_gone": {
+      "message": "Serwer SnapDog nie ma już klienta o adresie MAC {mac}."
+    },
+    "unknown_zone": {
+      "message": "Serwer SnapDog nie ma strefy {zone}."
+    },
+    "not_snapdog_client": {
+      "message": "„{name}” to zwykły klient Snapcast. Tylko klient SnapDog ma korektor i korekcję głośnika."
+    },
+    "nothing_to_change": {
+      "message": "Podaj enabled, bands lub oba."
+    },
+    "eq_unknown": {
+      "message": "Korektor „{name}” nie został jeszcze odczytany z serwera."
+    },
+    "unknown_band": {
+      "message": "Pasmo {band} nie istnieje: korektor ma {count} pasm."
+    },
+    "unknown_option": {
+      "message": "Serwer nie oferuje „{option}”."
     }
   },
   "issues": {
@@ -167,6 +188,110 @@
           "name": "ID listy",
           "description": "playlist_id listy odtwarzania, na przykład subsonic:42."
         }
+      }
+    },
+    "move_client": {
+      "name": "Przenieś klienta",
+      "description": "Umieszcza klienta w innej strefie.",
+      "fields": {
+        "zone": {
+          "name": "Strefa",
+          "description": "Numer strefy, liczony od 1 jak w snapdog.toml."
+        }
+      }
+    },
+    "rename_client": {
+      "name": "Zmień nazwę klienta",
+      "description": "Nadaje klientowi inną nazwę.",
+      "fields": {
+        "name": {
+          "name": "Nowa nazwa",
+          "description": "Nowa nazwa klienta."
+        }
+      }
+    },
+    "apply_speaker_profile": {
+      "name": "Zastosuj profil głośnika",
+      "description": "Stosuje korekcję znanego głośnika do klienta SnapDog.",
+      "fields": {
+        "speaker": {
+          "name": "Głośnik",
+          "description": "Nazwa profilu głośnika, tak jak oferuje ją wybór korekcji głośnika."
+        }
+      }
+    },
+    "set_client_eq": {
+      "name": "Ustaw korektor klienta",
+      "description": "Włącza lub wyłącza korektor klienta SnapDog albo zastępuje wszystkie jego pasma.",
+      "fields": {
+        "enabled": {
+          "name": "Włączony",
+          "description": "Włącza lub wyłącza korektor."
+        },
+        "bands": {
+          "name": "Pasma",
+          "description": "Wszystkie pasma w kolejności. Każde ma freq (Hz), gain (dB), q i type (low_shelf, high_shelf, peaking, low_pass lub high_pass)."
+        }
+      }
+    },
+    "set_client_eq_band": {
+      "name": "Ustaw pasmo korektora klienta",
+      "description": "Zmienia jedno pasmo korektora klienta SnapDog.",
+      "fields": {
+        "band": {
+          "name": "Pasmo",
+          "description": "Numer pasma, liczony od 1."
+        },
+        "freq": {
+          "name": "Częstotliwość",
+          "description": "Częstotliwość środkowa lub graniczna w Hz."
+        },
+        "gain": {
+          "name": "Wzmocnienie",
+          "description": "Wzmocnienie w dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Współczynnik dobroci."
+        },
+        "type": {
+          "name": "Typ",
+          "description": "Kształt filtra: low_shelf, high_shelf, peaking, low_pass lub high_pass."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": {
+        "name": "Połączony"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Głośność"
+      },
+      "latency": {
+        "name": "Opóźnienie"
+      }
+    },
+    "select": {
+      "zone": {
+        "name": "Strefa"
+      },
+      "speaker": {
+        "name": "Korekcja głośnika"
+      },
+      "eq_preset": {
+        "name": "Preset EQ"
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Wyciszenie"
+      },
+      "eq": {
+        "name": "Korektor"
       }
     }
   }

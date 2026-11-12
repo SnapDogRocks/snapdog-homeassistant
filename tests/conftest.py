@@ -10,6 +10,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.const import CONF_HOST, CONF_PORT
 from pysnapdog import (
+    Client,
+    EqBand,
+    EqConfig,
+    EqPreset,
+    FilterType,
     Image,
     MediaTrack,
     Playlist,
@@ -55,6 +60,31 @@ def make_zone(**changes: Any) -> Zone:
         presence_timer_active=False,
     )
     return _replace(zone, changes)
+
+
+def make_client(**changes: Any) -> Client:
+    client = Client(
+        index=1,
+        name="Kitchen speaker",
+        icon="mdi:speaker",
+        mac="02:42:ac:11:00:10",
+        volume=30,
+        max_volume=80,
+        muted=False,
+        connected=True,
+        is_snapdog=True,
+        zone_index=1,
+    )
+    return _replace(client, changes)
+
+
+def make_eq(**changes: Any) -> EqConfig:
+    config = EqConfig(
+        enabled=True,
+        bands=(EqBand(freq=100.0, gain=3.0, q=0.7, type=FilterType.LOW_SHELF),) * 10,
+        preset="Flat",
+    )
+    return _replace(config, changes)
 
 
 def _replace(obj: Any, changes: dict[str, Any]) -> Any:
@@ -159,6 +189,13 @@ def api() -> Generator[MagicMock]:
         client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.31.0", "1.90"))
         client.zones = AsyncMock(return_value=[make_zone()])
         client.clients = AsyncMock(return_value=[])
+        client.client_latency = AsyncMock(return_value=20)
+        client.client_eq = AsyncMock(return_value=make_eq())
+        client.client_speaker = AsyncMock(return_value=make_eq(preset="Genelec 8030C"))
+        client.eq_presets = AsyncMock(
+            return_value=[EqPreset("Flat", make_eq().bands), EqPreset("Bass", make_eq().bands)]
+        )
+        client.speakers = AsyncMock(return_value=["Genelec 8030C", "KEF LS50"])
         client.zone_track = AsyncMock(return_value=make_track())
         client.playlists = AsyncMock(
             return_value=[
@@ -191,8 +228,17 @@ def api() -> Generator[MagicMock]:
             "play_playlist_id",
             "play_subsonic_track",
             "play_subsonic_album",
+            "set_client_volume",
+            "set_client_mute",
+            "set_client_zone",
         ):
             setattr(client, name, AsyncMock(return_value=None))
+        client.set_client_latency = AsyncMock(side_effect=lambda _index, value: value)
+        client.rename_client = AsyncMock(side_effect=lambda _index, name: name)
+        client.set_client_eq = AsyncMock(side_effect=lambda _index, config: config)
+        client.set_client_eq_band = AsyncMock(return_value=make_eq())
+        client.apply_client_eq_preset = AsyncMock(return_value=make_eq(preset="Bass"))
+        client.apply_client_speaker = AsyncMock(return_value=make_eq(preset="KEF LS50"))
         yield client
 
 
