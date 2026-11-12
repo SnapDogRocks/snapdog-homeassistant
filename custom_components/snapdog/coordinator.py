@@ -15,6 +15,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pysnapdog import (
     Client,
+    ClientEqChanged,
+    ClientSpeakerChanged,
     ClientStateChanged,
     EqConfig,
     Event,
@@ -248,9 +250,29 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                 data.zones[event.zone] = dataclasses.replace(
                     data.zones[event.zone], volume=event.volume, muted=event.muted
                 )
-            case ClientStateChanged():
-                if event.client not in data.clients:
+            case ClientStateChanged() | ClientEqChanged() | ClientSpeakerChanged():
+                if not await self._fold_client_event(event, data):
                     return
+            case PlaylistsChanged():
+                # An index, a name or the whole list may have changed. Keep the old list when
+                # the server cannot be read right now, the next event or reconnect reloads it.
+                try:
+                    data.playlists = await self.api.playlists()
+                except SnapDogError as err:
+                    LOGGER.warning("Cannot reload the playlists: %s", err)
+                    return
+            case _:
+                return
+        self.async_set_updated_data(data)
+
+    async def _fold_client_event(
+        self, event: ClientStateChanged | ClientEqChanged | ClientSpeakerChanged, data: SnapDogData
+    ) -> bool:
+        """Fold an event about a client into the state. ``False`` when the client is unknown."""
+        if event.client not in data.clients:
+            return False
+        match event:
+            case ClientStateChanged():
                 data.clients[event.client] = dataclasses.replace(
                     data.clients[event.client],
                     volume=event.volume,
@@ -270,14 +292,8 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     # speaker correction were not there to read before.
                     await self._read_client_settings(data, event.client, data.clients[event.client])
                     await self._read_eq_catalogue(data)
-            case PlaylistsChanged():
-                # An index, a name or the whole list may have changed. Keep the old list when
-                # the server cannot be read right now, the next event or reconnect reloads it.
-                try:
-                    data.playlists = await self.api.playlists()
-                except SnapDogError as err:
-                    LOGGER.warning("Cannot reload the playlists: %s", err)
-                    return
-            case _:
-                return
-        self.async_set_updated_data(data)
+            case ClientEqChanged():
+                data.client_eq[event.client] = event.config
+            case ClientSpeakerChanged():
+                data.client_speaker[event.client] = event.config
+        return True
