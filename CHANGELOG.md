@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.2.0...v0.3.0) (2026-11-12)
+
+
+### Features
+
+* add the clients as devices with volume, mute, latency, zone, equalizer and speaker ([#26](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/26)) ([38f2fb8](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/38f2fb8947392922131fd2127aa4fb9580358de1))
+* follow latency, name, sample rate, equalizer and speaker from the events ([#27](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/27)) ([ebc8dcb](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/ebc8dcb4609d7dd5dee8c2e2a89d4cb5a054cf5c))
+* warn when zones moved to another position in the configuration ([#24](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/24)) ([79c408a](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/79c408ab4c912a45e7fc6d11be71add70c78e06b))
+
 ## [0.2.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.1.0...v0.2.0) (2026-11-07)
 
 
