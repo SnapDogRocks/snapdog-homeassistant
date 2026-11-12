@@ -467,3 +467,14 @@ async def test_set_client_eq_band_counts_from_one(
             {ATTR_ENTITY_ID: VOLUME, "band": 11, **BAND},
             blocking=True,
         )
+
+
+async def test_the_latency_follows_the_event_of_the_server(
+    hass: HomeAssistant, entry: MockConfigEntry, one_client: MagicMock, listener: MagicMock
+) -> None:
+    await setup(hass, entry, listener)
+    await send(hass, listener, event(latency_ms=-80))
+    assert hass.states.get(LATENCY).state == "-80"  # type: ignore[union-attr]
+    # A server that does not send the field leaves the value as it is.
+    await send(hass, listener, event(volume=35))
+    assert hass.states.get(LATENCY).state == "-80"  # type: ignore[union-attr]

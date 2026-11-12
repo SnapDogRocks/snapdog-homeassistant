@@ -258,6 +258,8 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     zone_index=event.zone,
                     is_snapdog=event.is_snapdog,
                 )
+                if event.latency_ms is not None:
+                    data.client_latency[event.client] = event.latency_ms
                 if event.is_snapdog and event.client not in data.client_eq:
                     # A SnapDog client that connected after the last read: its equalizer and
                     # speaker correction were not there to read before.
