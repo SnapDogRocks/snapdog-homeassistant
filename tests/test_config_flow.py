@@ -15,6 +15,7 @@ from pysnapdog import SnapDogAuthError, SnapDogConnectionError, VersionInfo
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import (
+    CONF_ADDRESS_FIXED,
     CONF_API_KEY,
     CONF_SERVER_ID,
     CONF_TLS,
@@ -178,6 +179,19 @@ async def test_zeroconf_moves_a_discovered_server_to_an_address_that_answers(
     assert entry.data[CONF_HOST] == "192.0.2.20"
 
 
+async def test_zeroconf_keeps_the_address_set_in_the_reconfigure_step(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    """A name with HTTPS that the user chose stays, although an announced address answers."""
+    entry.source = config_entries.SOURCE_ZEROCONF
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_ADDRESS_FIXED: True})
+    result = await announce(hass)
+    assert result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.10"
+    flow_api.version.assert_not_called()
+
+
 async def test_zeroconf_keeps_a_discovered_server_when_the_new_address_does_not_answer(
     hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
 ) -> None:
@@ -210,6 +224,7 @@ async def test_reconfigure_changes_the_address_and_keeps_the_key(
     assert entry.data[CONF_HOST] == "snapdog.example.org"
     assert entry.data[CONF_PORT] == 443
     assert entry.data[CONF_TLS] is True
+    assert entry.data[CONF_ADDRESS_FIXED] is True
     assert entry.data[CONF_API_KEY] == "secret"
     assert entry.data[CONF_SERVER_ID] == SERVER_ID
     assert entry.title == "SnapDog snapdog.example.org"

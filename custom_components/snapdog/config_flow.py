@@ -19,6 +19,7 @@ from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from pysnapdog import SnapDogAuthError, SnapDogClient, SnapDogError
 
 from .const import (
+    CONF_ADDRESS_FIXED,
     CONF_API_KEY,
     CONF_SERVER_ID,
     CONF_TLS,
@@ -128,12 +129,14 @@ class SnapDogConfigFlow(ConfigFlow, domain=DOMAIN):
 
         A server announces every address it has, among them ones that Home Assistant cannot reach
         (a bridge network of its container). An entry the user set up by hand keeps the address the
-        user chose, which may be a name with HTTPS. An entry that came from zeroconf follows the
-        announcement, but only to an address that answers.
+        user chose, which may be a name with HTTPS, and so does an entry whose address the user
+        changed in the reconfigure step. An entry that came from zeroconf follows the announcement,
+        but only to an address that answers.
         """
-        if entry.source == SOURCE_ZEROCONF and (entry.data[CONF_HOST], entry.data[CONF_PORT]) != (
-            host,
-            port,
+        if (
+            entry.source == SOURCE_ZEROCONF
+            and not entry.data.get(CONF_ADDRESS_FIXED)
+            and (entry.data[CONF_HOST], entry.data[CONF_PORT]) != (host, port)
         ):
             data = {**entry.data, CONF_HOST: host, CONF_PORT: port}
             _, error = await self._check(data)
@@ -153,6 +156,7 @@ class SnapDogConfigFlow(ConfigFlow, domain=DOMAIN):
                 **entry.data,
                 **user_input,
                 CONF_API_KEY: user_input.get(CONF_API_KEY) or entry.data.get(CONF_API_KEY),
+                CONF_ADDRESS_FIXED: True,
             }
             _, error = await self._check(data)
             if error is None:
