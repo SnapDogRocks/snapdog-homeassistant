@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.3.0...v0.3.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* **config:** keep the address a user chose when a server announces itself ([#28](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/28)) ([e836bdd](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/e836bddd2c9b5fe015b1413974682bc2633762da))
+
 ## [0.3.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.2.0...v0.3.0) (2026-11-12)
 
 
