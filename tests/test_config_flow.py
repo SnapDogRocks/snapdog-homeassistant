@@ -15,6 +15,7 @@ from pysnapdog import SnapDogAuthError, SnapDogConnectionError, VersionInfo
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.snapdog.const import (
+    CONF_ADDRESS_FIXED,
     CONF_API_KEY,
     CONF_SERVER_ID,
     CONF_TLS,
@@ -150,16 +151,98 @@ async def test_zeroconf_prefills_the_form_and_keeps_the_server_id(
     assert result["result"].unique_id == SERVER_ID
 
 
-async def test_zeroconf_updates_the_address_of_a_known_server(
+async def announce(hass: HomeAssistant) -> dict:
+    return await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=discovery()
+    )
+
+
+async def test_zeroconf_keeps_the_address_a_user_chose(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    """An announcement lists every address of the server, among them ones that cannot be reached."""
+    entry.add_to_hass(hass)
+    result = await announce(hass)
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.10"
+    flow_api.version.assert_not_called()
+
+
+async def test_zeroconf_moves_a_discovered_server_to_an_address_that_answers(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    entry.source = config_entries.SOURCE_ZEROCONF
+    entry.add_to_hass(hass)
+    result = await announce(hass)
+    assert result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.20"
+
+
+async def test_zeroconf_keeps_the_address_set_in_the_reconfigure_step(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    """A name with HTTPS that the user chose stays, although an announced address answers."""
+    entry.source = config_entries.SOURCE_ZEROCONF
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(entry, data={**entry.data, CONF_ADDRESS_FIXED: True})
+    result = await announce(hass)
+    assert result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.10"
+    flow_api.version.assert_not_called()
+
+
+async def test_zeroconf_keeps_a_discovered_server_when_the_new_address_does_not_answer(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    entry.source = config_entries.SOURCE_ZEROCONF
+    entry.add_to_hass(hass)
+    flow_api.version.side_effect = SnapDogConnectionError("no route")
+    result = await announce(hass)
+    assert result["reason"] == "already_configured"
+    assert entry.data[CONF_HOST] == "192.0.2.10"
+
+
+async def test_reconfigure_changes_the_address_and_keeps_the_key(
     hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
 ) -> None:
     entry.add_to_hass(hass)
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_ZEROCONF}, data=discovery()
+    result = await entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOST: "snapdog.example.org",
+            CONF_PORT: 443,
+            CONF_TLS: True,
+            CONF_VERIFY_TLS: True,
+        },
     )
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
-    assert entry.data[CONF_HOST] == "192.0.2.20"
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_HOST] == "snapdog.example.org"
+    assert entry.data[CONF_PORT] == 443
+    assert entry.data[CONF_TLS] is True
+    assert entry.data[CONF_ADDRESS_FIXED] is True
+    assert entry.data[CONF_API_KEY] == "secret"
+    assert entry.data[CONF_SERVER_ID] == SERVER_ID
+    assert entry.title == "SnapDog snapdog.example.org"
+
+
+async def test_reconfigure_refuses_an_address_that_does_not_answer(
+    hass: HomeAssistant, flow_api: MagicMock, entry: MockConfigEntry
+) -> None:
+    entry.add_to_hass(hass)
+    flow_api.version.side_effect = SnapDogConnectionError("no route")
+    result = await entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: "192.0.2.99", CONF_PORT: 5555, CONF_TLS: False, CONF_VERIFY_TLS: True},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "cannot_connect"}
+    assert entry.data[CONF_HOST] == "192.0.2.10"
 
 
 async def test_zeroconf_without_a_server_id_is_refused(hass: HomeAssistant) -> None:

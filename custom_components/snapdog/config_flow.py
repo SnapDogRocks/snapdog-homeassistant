@@ -1,4 +1,4 @@
-"""Set up a SnapDog server by hand, from zeroconf, and renew its API key."""
+"""Set up a SnapDog server by hand or from zeroconf, change its address and renew its API key."""
 
 from __future__ import annotations
 
@@ -7,13 +7,19 @@ from collections.abc import Mapping
 from typing import Any
 
 import probatio
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    SOURCE_ZEROCONF,
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+)
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from pysnapdog import SnapDogAuthError, SnapDogClient, SnapDogError
 
 from .const import (
+    CONF_ADDRESS_FIXED,
     CONF_API_KEY,
     CONF_SERVER_ID,
     CONF_TLS,
@@ -103,17 +109,72 @@ class SnapDogConfigFlow(ConfigFlow, domain=DOMAIN):
         if not server_id:
             return self.async_abort(reason="no_server_id")
         host = str(discovery_info.ip_address)
+        port = discovery_info.port or DEFAULT_PORT
         await self.async_set_unique_id(server_id)
-        self._abort_if_unique_id_configured(
-            updates={CONF_HOST: host, CONF_PORT: discovery_info.port}
-        )
-        self._async_abort_entries_match({CONF_HOST: host, CONF_PORT: discovery_info.port})
+        known = self.hass.config_entries.async_entry_for_domain_unique_id(DOMAIN, server_id)
+        if known is not None:
+            return await self._follow_announcement(known, host, port)
+        self._async_abort_entries_match({CONF_HOST: host, CONF_PORT: port})
         self._host = host
-        self._port = discovery_info.port or DEFAULT_PORT
+        self._port = port
         self._tls = properties.get("tls") == "true"
         self._server_id = server_id
         self.context["title_placeholders"] = {"name": f"SnapDog {host}"}
         return await self.async_step_user()
+
+    async def _follow_announcement(
+        self, entry: ConfigEntry, host: str, port: int
+    ) -> ConfigFlowResult:
+        """Take a new address from an announcement of a known server, if it is safe to.
+
+        A server announces every address it has, among them ones that Home Assistant cannot reach
+        (a bridge network of its container). An entry the user set up by hand keeps the address the
+        user chose, which may be a name with HTTPS, and so does an entry whose address the user
+        changed in the reconfigure step. An entry that came from zeroconf follows the announcement,
+        but only to an address that answers.
+        """
+        if (
+            entry.source == SOURCE_ZEROCONF
+            and not entry.data.get(CONF_ADDRESS_FIXED)
+            and (entry.data[CONF_HOST], entry.data[CONF_PORT]) != (host, port)
+        ):
+            data = {**entry.data, CONF_HOST: host, CONF_PORT: port}
+            _, error = await self._check(data)
+            if error is None:
+                self.hass.config_entries.async_update_entry(entry, data=data)
+                self.hass.config_entries.async_schedule_reload(entry.entry_id)
+        return self.async_abort(reason="already_configured")
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the address of the server. An empty API key keeps the current one."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            data = {
+                **entry.data,
+                **user_input,
+                CONF_API_KEY: user_input.get(CONF_API_KEY) or entry.data.get(CONF_API_KEY),
+                CONF_ADDRESS_FIXED: True,
+            }
+            _, error = await self._check(data)
+            if error is None:
+                return self.async_update_reload_and_abort(
+                    entry, title=f"SnapDog {data[CONF_HOST]}", data=data
+                )
+            errors["base"] = error
+        current = entry.data
+        schema = probatio.Schema(
+            {
+                probatio.Required(CONF_HOST, default=current[CONF_HOST]): str,
+                probatio.Required(CONF_PORT, default=current[CONF_PORT]): int,
+                probatio.Optional(CONF_API_KEY): str,
+                probatio.Required(CONF_TLS, default=current[CONF_TLS]): bool,
+                probatio.Required(CONF_VERIFY_TLS, default=current[CONF_VERIFY_TLS]): bool,
+            }
+        )
+        return self.async_show_form(step_id="reconfigure", data_schema=schema, errors=errors)
 
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:
         """The server no longer accepts the key."""

@@ -12,6 +12,7 @@ CONF_API_KEY: Final = "api_key"
 CONF_TLS: Final = "tls"
 CONF_VERIFY_TLS: Final = "verify_tls"
 CONF_SERVER_ID: Final = "server_id"
+CONF_ADDRESS_FIXED: Final = "address_fixed"  # the user chose the address, announcements leave it
 
 DEFAULT_PORT: Final = 5555
 MINIMUM_SERVER_VERSION: Final = (0, 31, 0)

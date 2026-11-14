@@ -19,6 +19,17 @@
         "data": {
           "api_key": "API-Schlüssel"
         }
+      },
+      "reconfigure": {
+        "title": "Adresse des Servers ändern",
+        "description": "Ändere, wie Home Assistant den Server erreicht. Lass den API-Schlüssel leer, um den bisherigen zu behalten.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "API-Schlüssel",
+          "tls": "HTTPS verwenden",
+          "verify_tls": "Zertifikat prüfen"
+        }
       }
     },
     "error": {
@@ -29,7 +40,8 @@
     "abort": {
       "already_configured": "Dieser Server ist bereits eingerichtet.",
       "no_server_id": "Die Ankündigung enthält keine Server-ID. Füge den Server von Hand hinzu.",
-      "reauth_successful": "Der API-Schlüssel wurde aktualisiert."
+      "reauth_successful": "Der API-Schlüssel wurde aktualisiert.",
+      "reconfigure_successful": "Die Adresse wurde aktualisiert."
     }
   },
   "exceptions": {

@@ -19,6 +19,17 @@
         "data": {
           "api_key": "API key"
         }
+      },
+      "reconfigure": {
+        "title": "Change the address of the server",
+        "description": "Change how Home Assistant reaches the server. Leave the API key empty to keep the current one.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "API key",
+          "tls": "Use HTTPS",
+          "verify_tls": "Verify the certificate"
+        }
       }
     },
     "error": {
@@ -29,7 +40,8 @@
     "abort": {
       "already_configured": "This server is already set up.",
       "no_server_id": "The announcement carries no server id. Add the server by hand.",
-      "reauth_successful": "The API key was updated."
+      "reauth_successful": "The API key was updated.",
+      "reconfigure_successful": "The address was updated."
     }
   },
   "exceptions": {

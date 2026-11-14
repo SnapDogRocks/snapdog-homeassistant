@@ -19,6 +19,17 @@
         "data": {
           "api_key": "API-sleutel"
         }
+      },
+      "reconfigure": {
+        "title": "Het adres van de server wijzigen",
+        "description": "Wijzig hoe Home Assistant de server bereikt. Laat de API-sleutel leeg om de huidige te behouden.",
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "api_key": "API-sleutel",
+          "tls": "HTTPS gebruiken",
+          "verify_tls": "Certificaat controleren"
+        }
       }
     },
     "error": {
@@ -29,7 +40,8 @@
     "abort": {
       "already_configured": "Deze server is al ingesteld.",
       "no_server_id": "De aankondiging bevat geen server-id. Voeg de server handmatig toe.",
-      "reauth_successful": "De API-sleutel is bijgewerkt."
+      "reauth_successful": "De API-sleutel is bijgewerkt.",
+      "reconfigure_successful": "Het adres is bijgewerkt."
     }
   },
   "exceptions": {
