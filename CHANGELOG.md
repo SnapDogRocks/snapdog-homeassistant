@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.4.0...v0.5.0) (2026-11-15)
+
+
+### Features
+
+* **server:** add version, counts, update and KNX programming mode entities ([#33](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/33)) ([8069033](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/80690339ec3ad6c63402fd2fbcd69de310309c82))
+
 ## [0.4.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.3.1...v0.4.0) (2026-11-15)
 
 
