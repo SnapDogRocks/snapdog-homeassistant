@@ -356,6 +356,9 @@
       },
       "presence_control": {
         "name": "Anwesenheitssteuerung"
+      },
+      "knx_programming_mode": {
+        "name": "KNX-Programmiermodus"
       }
     },
     "button": {
@@ -380,6 +383,23 @@
       },
       "content_type": {
         "name": "Inhaltstyp"
+      },
+      "version": {
+        "name": "Version"
+      },
+      "zones_count": {
+        "name": "Zonen"
+      },
+      "clients_count": {
+        "name": "Clients"
+      },
+      "radios_count": {
+        "name": "Radiosender"
+      }
+    },
+    "update": {
+      "server": {
+        "name": "Server"
       }
     }
   }

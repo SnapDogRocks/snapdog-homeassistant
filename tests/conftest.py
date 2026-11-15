@@ -22,7 +22,11 @@ from pysnapdog import (
     SearchItem,
     SearchKind,
     SearchResult,
+    SnapDogBusyError,
+    SnapDogResponseError,
+    SystemStatus,
     TrackMetadata,
+    UpdateStatus,
     VersionInfo,
     Zone,
 )
@@ -123,6 +127,21 @@ def make_track(**changes: Any) -> TrackMetadata:
     return _replace(track, changes)
 
 
+def make_update(**changes: Any) -> UpdateStatus:
+    update = UpdateStatus(
+        state="current",
+        update_mode="manual",
+        update_available=False,
+        maintenance_time="03:00",
+        timezone="Europe/Berlin",
+        current_version="0.31.0",
+        available_version=None,
+        last_error=None,
+        progress=None,
+    )
+    return _replace(update, changes)
+
+
 def make_playlist(**changes: Any) -> Playlist:
     playlist = Playlist(
         index=0,
@@ -187,6 +206,14 @@ def api() -> Generator[MagicMock]:
     with patch("custom_components.snapdog.coordinator.SnapDogClient") as cls:
         client = cls.return_value
         client.version = AsyncMock(return_value=VersionInfo("SnapDog", "0.31.0", "1.90"))
+        client.status = AsyncMock(return_value=SystemStatus("0.31.0", 1, 0, 12))
+        # A server without the updater sidecar answers 503, one that is no KNX device 409.
+        client.update_status = AsyncMock(side_effect=SnapDogBusyError("no updater", status=503))
+        client.knx_programming_mode = AsyncMock(
+            side_effect=SnapDogResponseError("not a KNX device", status=409)
+        )
+        client.apply_update = AsyncMock(return_value=make_update(state="updating"))
+        client.set_knx_programming_mode = AsyncMock(side_effect=lambda enabled: enabled)
         client.zones = AsyncMock(return_value=[make_zone()])
         client.clients = AsyncMock(return_value=[])
         client.client_latency = AsyncMock(return_value=20)

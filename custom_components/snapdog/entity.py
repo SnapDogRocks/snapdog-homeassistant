@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pysnapdog import Client, EqBand, EqConfig, FilterType, SnapDogError, SnapDogReadOnlyError
 
 from .const import CONF_SERVER_ID, DOMAIN
-from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
+from .coordinator import SnapDogConfigEntry, SnapDogCoordinator, SnapDogData
 
 _T = TypeVar("_T")
 
@@ -106,6 +106,50 @@ class SnapDogEntity(CoordinatorEntity[SnapDogCoordinator]):
             )
         stored = await request(self.coordinator.api.set_zone_eq_band(self._zone, band - 1, value))
         self.coordinator.set_zone_eq(self._zone, stored)
+
+
+class SnapDogServerEntity(CoordinatorEntity[SnapDogCoordinator]):
+    """An entity of the server itself. Unavailable while the WebSocket is down."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: SnapDogCoordinator) -> None:
+        """Attach the entity to the device of the server."""
+        super().__init__(coordinator)
+        self._server_id: str = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, self._server_id)})
+
+    @property
+    def available(self) -> bool:
+        """Whether the server is reachable."""
+        return self.coordinator.connected and super().available
+
+
+def async_setup_optional_server_entity(
+    entry: SnapDogConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+    present: Callable[[SnapDogData], bool],
+    create: Callable[[SnapDogCoordinator], Entity],
+) -> None:
+    """Add an entity of the server once the server turns out to have what it shows.
+
+    The updater and the KNX programming mode exist only in some deployments. The entity is added
+    when the server first answers for it, and is never removed again, so a flaky answer cannot
+    make it vanish. An entity whose subject is gone reports itself unavailable.
+    """
+    coordinator = entry.runtime_data
+    added = False
+
+    @callback
+    def add_when_present() -> None:
+        nonlocal added
+        if added or not present(coordinator.data):
+            return
+        added = True
+        async_add_entities([create(coordinator)])
+
+    add_when_present()
+    entry.async_on_unload(coordinator.async_add_listener(add_when_present))
 
 
 type ZoneEntityFactory = Callable[[SnapDogCoordinator, int], list[Entity]]
