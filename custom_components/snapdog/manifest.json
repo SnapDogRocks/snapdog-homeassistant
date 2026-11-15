@@ -15,7 +15,7 @@
   "requirements": [
     "pysnapdog==0.5.0"
   ],
-  "version": "0.4.0",
+  "version": "0.5.0",
   "zeroconf": [
     "_snapdog._tcp.local."
   ]
