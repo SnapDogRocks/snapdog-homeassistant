@@ -318,9 +318,6 @@
       "connected": {
         "name": "Connecté"
       },
-      "presence": {
-        "name": "Présence"
-      },
       "presence_timer": {
         "name": "Minuterie de présence"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Serveur"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Capteur de présence",
+        "description": "Zone {zone} ({position}) : choisissez le capteur auquel SnapDog réagit. Laissez vide pour aucun.",
+        "data": {
+          "sensor": "Capteur de présence"
+        },
+        "data_description": {
+          "sensor": "Home Assistant transmet l'état de ce capteur à la zone. Quand il s'active, la zone démarre la lecture, comme avec un détecteur relié au serveur. Après un redémarrage du serveur, l'état actuel est renvoyé."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "L'intégration n'est pas chargée. Réessayez une fois qu'elle l'est.",
+      "no_zones": "Le serveur n'a pas encore de zones."
     }
   }
 }

@@ -318,9 +318,6 @@
       "connected": {
         "name": "Połączony"
       },
-      "presence": {
-        "name": "Obecność"
-      },
       "presence_timer": {
         "name": "Timer obecności"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Serwer"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Czujnik obecności",
+        "description": "Strefa {zone} ({position}): wybierz czujnik, na który reaguje SnapDog. Zostaw puste, aby nie używać.",
+        "data": {
+          "sensor": "Czujnik obecności"
+        },
+        "data_description": {
+          "sensor": "Home Assistant przekazuje stan tego czujnika do strefy. Po włączeniu strefa zaczyna odtwarzanie, tak jak przy czujniku podłączonym do serwera. Po restarcie serwera przekazywany jest aktualny stan."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "Integracja nie jest załadowana. Spróbuj ponownie, gdy będzie działać.",
+      "no_zones": "Serwer nie ma jeszcze stref."
     }
   }
 }

@@ -318,9 +318,6 @@
       "connected": {
         "name": "Ligado"
       },
-      "presence": {
-        "name": "Presença"
-      },
       "presence_timer": {
         "name": "Temporizador de presença"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Servidor"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Sensor de presença",
+        "description": "Zona {zone} ({position}): escolhe o sensor a que o SnapDog reage. Deixa vazio para nenhum.",
+        "data": {
+          "sensor": "Sensor de presença"
+        },
+        "data_description": {
+          "sensor": "O Home Assistant envia o estado deste sensor à zona. Quando liga, a zona começa a reproduzir, como com um detetor ligado ao servidor. Após reiniciar o servidor, o estado atual é reenviado."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "A integração não está carregada. Tenta novamente quando estiver.",
+      "no_zones": "O servidor ainda não tem zonas."
     }
   }
 }

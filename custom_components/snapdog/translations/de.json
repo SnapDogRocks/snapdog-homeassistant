@@ -318,9 +318,6 @@
       "connected": {
         "name": "Verbunden"
       },
-      "presence": {
-        "name": "Anwesenheit"
-      },
       "presence_timer": {
         "name": "Anwesenheits-Timer"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Server"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Präsenzsensor",
+        "description": "Zone {zone} ({position}): Wähle den Sensor, auf dessen Anwesenheit SnapDog reagiert. Leer lassen für keinen.",
+        "data": {
+          "sensor": "Präsenzsensor"
+        },
+        "data_description": {
+          "sensor": "Home Assistant meldet den Zustand dieses Sensors an die Zone. Schaltet er ein, beginnt die Zone zu spielen, wie bei einem Melder am Server. Nach einem Neustart des Servers wird der aktuelle Zustand nachgeliefert."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "Die Integration ist nicht geladen. Versuche es erneut, sobald sie läuft.",
+      "no_zones": "Der Server hat noch keine Zonen."
     }
   }
 }

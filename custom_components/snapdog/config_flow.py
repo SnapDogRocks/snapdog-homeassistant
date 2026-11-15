@@ -10,10 +10,14 @@ import probatio
 from homeassistant.config_entries import (
     SOURCE_ZEROCONF,
     ConfigEntry,
+    ConfigEntryState,
     ConfigFlow,
     ConfigFlowResult,
+    OptionsFlowWithReload,
 )
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.core import callback
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from pysnapdog import SnapDogAuthError, SnapDogClient, SnapDogError
@@ -21,6 +25,7 @@ from pysnapdog import SnapDogAuthError, SnapDogClient, SnapDogError
 from .const import (
     CONF_ADDRESS_FIXED,
     CONF_API_KEY,
+    CONF_PRESENCE_SENSORS,
     CONF_SERVER_ID,
     CONF_TLS,
     CONF_VERIFY_TLS,
@@ -40,6 +45,12 @@ class SnapDogConfigFlow(ConfigFlow, domain=DOMAIN):
     """One config entry per server."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(_config_entry: ConfigEntry) -> SnapDogOptionsFlow:
+        """The options choose a presence sensor per zone."""
+        return SnapDogOptionsFlow()
 
     def __init__(self) -> None:
         """Nothing is known before the first step."""
@@ -196,4 +207,54 @@ class SnapDogConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="reauth_confirm",
             data_schema=probatio.Schema({probatio.Required(CONF_API_KEY): str}),
             errors=errors,
+        )
+
+
+class SnapDogOptionsFlow(OptionsFlowWithReload):
+    """Choose, zone by zone, the Home Assistant sensor whose presence the zone reacts to."""
+
+    def __init__(self) -> None:
+        """Nothing is known before the first step."""
+        self._zones: list[tuple[int, str]] = []
+        self._position = 0
+        self._current: dict[str, str] = {}
+        self._chosen: dict[str, str] = {}
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Read the zones the server has, then ask for each of them."""
+        entry = self.config_entry
+        if entry.state is not ConfigEntryState.LOADED:
+            return self.async_abort(reason="not_loaded")
+        zones = entry.runtime_data.data.zones
+        if not zones:
+            return self.async_abort(reason="no_zones")
+        self._zones = [(index, zones[index].name) for index in sorted(zones)]
+        self._current = dict(entry.options.get(CONF_PRESENCE_SENSORS, {}))
+        return await self.async_step_zone()
+
+    async def async_step_zone(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Ask for the sensor of one zone. An empty answer means the zone has none."""
+        if user_input is not None:
+            if sensor := user_input.get("sensor"):
+                self._chosen[str(self._zones[self._position][0])] = sensor
+            self._position += 1
+            if self._position >= len(self._zones):
+                return self.async_create_entry(
+                    data={**self.config_entry.options, CONF_PRESENCE_SENSORS: self._chosen}
+                )
+        index, name = self._zones[self._position]
+        schema = probatio.Schema(
+            {
+                probatio.Optional(
+                    "sensor", description={"suggested_value": self._current.get(str(index))}
+                ): selector.EntitySelector(selector.EntitySelectorConfig(domain="binary_sensor"))
+            }
+        )
+        return self.async_show_form(
+            step_id="zone",
+            data_schema=schema,
+            description_placeholders={
+                "zone": name,
+                "position": f"{self._position + 1}/{len(self._zones)}",
+            },
         )

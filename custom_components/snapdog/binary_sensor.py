@@ -1,4 +1,4 @@
-"""Whether a client is connected, whether a zone is occupied."""
+"""Whether a client is connected, whether the countdown of a zone runs."""
 
 from __future__ import annotations
 
@@ -25,14 +25,11 @@ async def async_setup_entry(
     entry: SnapDogConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add the connection state of every client and the presence state of every zone."""
+    """Add the connection state of every client and the presence countdown of every zone."""
     async_setup_zone_entities(
         entry,
         async_add_entities,
-        lambda coordinator, zone: [
-            ZonePresence(coordinator, zone),
-            ZonePresenceTimer(coordinator, zone),
-        ],
+        lambda coordinator, zone: [ZonePresenceTimer(coordinator, zone)],
     )
     async_setup_client_entities(
         entry, async_add_entities, lambda coordinator, mac: [ClientConnected(coordinator, mac)]
@@ -57,28 +54,6 @@ class ClientConnected(SnapDogClientEntity, BinarySensorEntity):
         """Whether the server has the client."""
         client = self._client
         return client.connected if client is not None else None
-
-
-class ZonePresence(SnapDogEntity, BinarySensorEntity):
-    """Whether the server takes the zone as occupied.
-
-    Presence is an input of the server (a detector, KNX or the API). It is a sensor here and
-    never a switch: reporting presence makes the server start the playback of the zone.
-    """
-
-    _attr_translation_key = "presence"
-    _attr_device_class = BinarySensorDeviceClass.OCCUPANCY
-
-    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
-        """Set the identity."""
-        super().__init__(coordinator, zone)
-        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
-        self._attr_unique_id = f"{server_id}_zone_{zone}_presence"
-
-    @property
-    def is_on(self) -> bool:
-        """The presence the server reports."""
-        return self.coordinator.data.zones[self._zone].presence
 
 
 class ZonePresenceTimer(SnapDogEntity, BinarySensorEntity):

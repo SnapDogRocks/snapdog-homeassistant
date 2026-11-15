@@ -6,12 +6,14 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_SERVER_ID, DOMAIN
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import client_identifier
 from .layout import ZoneLayout
+from .presence import PresenceBridge
 from .services import async_register_services
 
 PLATFORMS: list[Platform] = [
@@ -51,7 +53,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: SnapDogConfigEntry) -> b
     entry.async_on_unload(coordinator.async_stop)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _keep_client_devices_current(hass, entry, coordinator)
+    _drop_presence_mirror(hass, entry)
+    PresenceBridge(hass, entry, coordinator).async_start()
     return True
+
+
+def _drop_presence_mirror(hass: HomeAssistant, entry: SnapDogConfigEntry) -> None:
+    """Remove the presence sensor of a zone that versions before 0.6 created.
+
+    SnapDog measures no presence, so there is nothing to show. A zone reacts to the sensor the
+    user chose in the options instead.
+    """
+    registry = er.async_get(hass)
+    suffix = "_presence"
+    prefix = f"{entry.data[CONF_SERVER_ID]}_zone_"
+    for item in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if (
+            item.domain == "binary_sensor"
+            and item.unique_id.startswith(prefix)
+            and item.unique_id.endswith(suffix)
+        ):
+            registry.async_remove(item.entity_id)
 
 
 def _keep_client_devices_current(
