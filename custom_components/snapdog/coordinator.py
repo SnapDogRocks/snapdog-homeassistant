@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -20,6 +21,7 @@ from pysnapdog import (
     ClientStateChanged,
     EqConfig,
     Event,
+    PlaybackError,
     Playlist,
     PlaylistsChanged,
     SnapDogAuthError,
@@ -65,9 +67,9 @@ class SnapDogData:
     client_speaker: dict[int, EqConfig] = field(default_factory=dict)
     eq_presets: list[str] = field(default_factory=list)
     speakers: list[str] = field(default_factory=list)
-    # The same for a zone: its equalizer is sent as an event, the presence timeout is not (the
-    # server sends nothing when it changes), so it is read at every connect and follows the
-    # changes made through this integration.
+    # The same for a zone: its equalizer is sent as an event. So is the presence timeout, by
+    # servers from 0.36 on. Older ones send nothing when it changes, so it is read at every
+    # connect and follows the changes made through this integration.
     zone_eq: dict[int, EqConfig] = field(default_factory=dict)
     zone_presence_timeout: dict[int, int] = field(default_factory=dict)
 
@@ -94,6 +96,7 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             verify_tls=entry.data[CONF_VERIFY_TLS],
         )
         self.connected = False
+        self._playback_error_listeners: list[Callable[[PlaybackError], None]] = []
         self.layout = ZoneLayout(hass, entry.entry_id, entry.title)
         self._listener = SnapDogListener(
             self.api,
@@ -101,6 +104,19 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             on_connected=self._on_connected,
             on_disconnected=self._on_disconnected,
         )
+
+    @callback
+    def async_add_playback_error_listener(
+        self, listener: Callable[[PlaybackError], None]
+    ) -> Callable[[], None]:
+        """Call ``listener`` for every playback error. Returns the function that removes it."""
+        self._playback_error_listeners.append(listener)
+
+        @callback
+        def remove() -> None:
+            self._playback_error_listeners.remove(listener)
+
+        return remove
 
     async def async_start(self) -> None:
         """Read the state once so that setup fails visibly, then start listening."""
@@ -295,6 +311,10 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             case ClientStateChanged() | ClientEqChanged() | ClientSpeakerChanged():
                 if not await self._fold_client_event(event, data):
                     return
+            case PlaybackError():
+                # An error is no state, it is handed on once and changes nothing here.
+                self._on_playback_error(event)
+                return
             case PlaylistsChanged():
                 # An index, a name or the whole list may have changed. Keep the old list when
                 # the server cannot be read right now, the next event or reconnect reloads it.
@@ -306,6 +326,16 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             case _:
                 return
         self.async_set_updated_data(data)
+
+    def _on_playback_error(self, error: PlaybackError) -> None:
+        LOGGER.warning(
+            "Zone %s cannot play: %s%s",
+            error.zone,
+            error.message,
+            "" if error.recoverable else " (not recoverable)",
+        )
+        for listener in list(self._playback_error_listeners):
+            listener(error)
 
     @staticmethod
     def _fold_zone_setting_event(
@@ -324,6 +354,9 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                     presence_enabled=event.enabled,
                     presence_timer_active=event.timer_active,
                 )
+                # Servers that send the delay with the event tell a change made by KNX or MQTT.
+                if event.auto_off_delay is not None:
+                    data.zone_presence_timeout[event.zone] = event.auto_off_delay
         return True
 
     async def _fold_client_event(

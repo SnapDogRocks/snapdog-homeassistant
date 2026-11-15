@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from collections.abc import Mapping
 from datetime import datetime
 from typing import Any
 
+import probatio
 from homeassistant.components.media_player import MediaPlayerEntity
 from homeassistant.components.media_player.browse_media import (
     BrowseMedia,
@@ -22,6 +24,8 @@ from homeassistant.components.media_player.const import (
 from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 from pysnapdog import RepeatMode as SnapDogRepeat
@@ -29,7 +33,7 @@ from pysnapdog import SnapDogError, TrackMetadata, Zone
 
 from .const import CONF_SERVER_ID, DOMAIN, POSITION_TOLERANCE
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
-from .entity import SnapDogEntity, request
+from .entity import EQ_BAND_FIELDS, SnapDogEntity, eq_band, request
 from .media import (
     AlbumRef,
     MediaRef,
@@ -86,6 +90,14 @@ _BASE_FEATURES = (
 )
 
 
+ATTR_ENABLED = "enabled"
+ATTR_BANDS = "bands"
+ATTR_BAND = "band"
+
+SERVICE_SET_ZONE_EQ = "set_zone_eq"
+SERVICE_SET_ZONE_EQ_BAND = "set_zone_eq_band"
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: SnapDogConfigEntry,
@@ -104,6 +116,26 @@ async def async_setup_entry(
     add_new_zones()
     entry.async_on_unload(coordinator.async_add_listener(add_new_zones))
 
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_SET_ZONE_EQ,
+        {
+            probatio.Optional(ATTR_ENABLED): cv.boolean,
+            probatio.Optional(ATTR_BANDS): probatio.All(
+                cv.ensure_list, [EQ_BAND_FIELDS], probatio.Length(min=1)
+            ),
+        },
+        "async_set_zone_eq",
+    )
+    platform.async_register_entity_service(
+        SERVICE_SET_ZONE_EQ_BAND,
+        {
+            probatio.Required(ATTR_BAND): probatio.All(cv.positive_int, probatio.Range(min=1)),
+            **EQ_BAND_FIELDS,
+        },
+        "async_set_zone_eq_band",
+    )
+
 
 class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
     """A zone. Its state comes from the server and never from what was asked for."""
@@ -120,6 +152,17 @@ class SnapDogZonePlayer(SnapDogEntity, MediaPlayerEntity):
         self._position_updated_at: datetime | None = None
         self._position_key: tuple[object, ...] | None = None
         self._remember_position()
+
+    async def async_set_zone_eq(
+        self, enabled: bool | None = None, bands: list[Mapping[str, Any]] | None = None
+    ) -> None:
+        """Replace the bands of the equalizer of the zone, switch it, or both."""
+        parsed = None if bands is None else [eq_band(band) for band in bands]
+        await self.replace_zone_eq(enabled=enabled, bands=parsed)
+
+    async def async_set_zone_eq_band(self, band: int, **fields: Any) -> None:
+        """Change one band of the equalizer of the zone, counted from 1."""
+        await self.replace_zone_band(band, eq_band(fields))
 
     @property
     def _zone_state(self) -> Zone:

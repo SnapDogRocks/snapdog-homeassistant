@@ -12,15 +12,16 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from pysnapdog import EqBand, FilterType
 
 from .const import CONF_SERVER_ID
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import (
+    EQ_BAND_FIELDS,
     SnapDogClientEntity,
     SnapDogEntity,
     async_setup_client_entities,
     async_setup_zone_entities,
+    eq_band,
     request,
 )
 
@@ -41,19 +42,6 @@ SERVICE_RENAME_CLIENT = "rename_client"
 SERVICE_APPLY_SPEAKER_PROFILE = "apply_speaker_profile"
 SERVICE_SET_CLIENT_EQ = "set_client_eq"
 SERVICE_SET_CLIENT_EQ_BAND = "set_client_eq_band"
-
-_BAND: dict[Any, Any] = {
-    probatio.Required("freq"): probatio.All(probatio.Coerce(float), probatio.Range(min=1)),
-    probatio.Required("gain"): probatio.Coerce(float),
-    probatio.Required("q"): probatio.All(probatio.Coerce(float), probatio.Range(min=0.01)),
-    probatio.Required("type"): probatio.In([str(kind) for kind in FilterType]),
-}
-
-
-def _band(value: Mapping[str, Any]) -> EqBand:
-    return EqBand(
-        freq=value["freq"], gain=value["gain"], q=value["q"], type=FilterType(value["type"])
-    )
 
 
 async def async_setup_entry(
@@ -99,7 +87,7 @@ async def async_setup_entry(
         {
             probatio.Optional(ATTR_ENABLED): cv.boolean,
             probatio.Optional(ATTR_BANDS): probatio.All(
-                cv.ensure_list, [_BAND], probatio.Length(min=1)
+                cv.ensure_list, [EQ_BAND_FIELDS], probatio.Length(min=1)
             ),
         },
         "async_set_eq",
@@ -108,7 +96,7 @@ async def async_setup_entry(
         SERVICE_SET_CLIENT_EQ_BAND,
         {
             probatio.Required(ATTR_BAND): probatio.All(cv.positive_int, probatio.Range(min=1)),
-            **_BAND,
+            **EQ_BAND_FIELDS,
         },
         "async_set_eq_band",
     )
@@ -153,12 +141,12 @@ class ClientVolume(SnapDogClientEntity, NumberEntity):
         self, enabled: bool | None = None, bands: list[Mapping[str, Any]] | None = None
     ) -> None:
         """Replace the bands of the equalizer, switch it, or both."""
-        parsed = None if bands is None else [_band(band) for band in bands]
+        parsed = None if bands is None else [eq_band(band) for band in bands]
         await self.replace_eq(enabled=enabled, bands=parsed)
 
     async def async_set_eq_band(self, band: int, **fields: Any) -> None:
         """Change one band of the equalizer, counted from 1."""
-        await self.replace_band(band, _band(fields))
+        await self.replace_band(band, eq_band(fields))
 
 
 class ClientLatency(SnapDogClientEntity, NumberEntity):

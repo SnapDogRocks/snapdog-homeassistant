@@ -201,3 +201,70 @@ set_client_eq_band:
             - peaking
             - low_pass
             - high_pass
+set_zone_eq:
+  target:
+    entity:
+      integration: snapdog
+      domain: media_player
+  fields:
+    enabled:
+      required: false
+      selector:
+        boolean:
+    bands:
+      required: false
+      example: '[{"freq": 100, "gain": 3, "q": 0.7, "type": "low_shelf"}]'
+      selector:
+        object:
+set_zone_eq_band:
+  target:
+    entity:
+      integration: snapdog
+      domain: media_player
+  fields:
+    band:
+      required: true
+      example: 1
+      selector:
+        number:
+          min: 1
+          max: 10
+          mode: box
+    freq:
+      required: true
+      example: 100
+      selector:
+        number:
+          min: 1
+          max: 24000
+          unit_of_measurement: Hz
+          mode: box
+    gain:
+      required: true
+      example: 3
+      selector:
+        number:
+          min: -24
+          max: 24
+          step: 0.1
+          unit_of_measurement: dB
+          mode: box
+    q:
+      required: true
+      example: 0.7
+      selector:
+        number:
+          min: 0.01
+          max: 20
+          step: 0.01
+          mode: box
+    type:
+      required: true
+      selector:
+        select:
+          options:
+            - low_shelf
+            - high_shelf
+            - peaking
+            - low_pass
+            - high_pass

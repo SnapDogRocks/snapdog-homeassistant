@@ -271,6 +271,46 @@
           "description": "Die Filterform: low_shelf, high_shelf, peaking, low_pass oder high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Zonen-Equalizer setzen",
+      "description": "Schaltet den Equalizer einer Zone um oder ersetzt alle seine Bänder.",
+      "fields": {
+        "enabled": {
+          "name": "Aktiv",
+          "description": "Schaltet den Equalizer ein oder aus."
+        },
+        "bands": {
+          "name": "Bänder",
+          "description": "Alle Bänder in der Reihenfolge. Jedes hat freq (Hz), gain (dB), q und type (low_shelf, high_shelf, peaking, low_pass oder high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Band des Zonen-Equalizers setzen",
+      "description": "Ändert ein Band des Equalizers einer Zone.",
+      "fields": {
+        "band": {
+          "name": "Band",
+          "description": "Die Nummer des Bands, ab 1 gezählt."
+        },
+        "freq": {
+          "name": "Frequenz",
+          "description": "Die Mitten- oder Eckfrequenz in Hz."
+        },
+        "gain": {
+          "name": "Verstärkung",
+          "description": "Die Verstärkung in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Der Gütefaktor."
+        },
+        "type": {
+          "name": "Typ",
+          "description": "Die Filterform: low_shelf, high_shelf, peaking, low_pass oder high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Anwesenheitssteuerung"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Nächste Playlist"
+      },
+      "previous_playlist": {
+        "name": "Vorherige Playlist"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Wiedergabefehler"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Quelle"
+      },
+      "bitrate": {
+        "name": "Bitrate"
+      },
+      "content_type": {
+        "name": "Inhaltstyp"
       }
     }
   }

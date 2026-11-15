@@ -271,6 +271,46 @@
           "description": "La forma del filtro: low_shelf, high_shelf, peaking, low_pass o high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Imposta l'equalizzatore della zona",
+      "description": "Attiva l'equalizzatore di una zona o sostituisce tutte le sue bande.",
+      "fields": {
+        "enabled": {
+          "name": "Attivo",
+          "description": "Attiva o disattiva l'equalizzatore."
+        },
+        "bands": {
+          "name": "Bande",
+          "description": "Tutte le bande, in ordine. Ognuna ha freq (Hz), gain (dB), q e type (low_shelf, high_shelf, peaking, low_pass o high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Imposta una banda dell'equalizzatore della zona",
+      "description": "Modifica una banda dell'equalizzatore di una zona.",
+      "fields": {
+        "band": {
+          "name": "Banda",
+          "description": "Il numero della banda, contato da 1."
+        },
+        "freq": {
+          "name": "Frequenza",
+          "description": "La frequenza centrale o di taglio in Hz."
+        },
+        "gain": {
+          "name": "Guadagno",
+          "description": "Il guadagno in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Il fattore di qualità."
+        },
+        "type": {
+          "name": "Tipo",
+          "description": "La forma del filtro: low_shelf, high_shelf, peaking, low_pass o high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Controllo presenza"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Playlist successiva"
+      },
+      "previous_playlist": {
+        "name": "Playlist precedente"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Errore di riproduzione"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Sorgente"
+      },
+      "bitrate": {
+        "name": "Bitrate"
+      },
+      "content_type": {
+        "name": "Tipo di contenuto"
       }
     }
   }

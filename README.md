@@ -25,8 +25,8 @@ Assistant shows up everywhere within a moment. It uses the client library
 [`pysnapdog`](https://github.com/SnapDogRocks/pysnapdog).
 
 > [!NOTE]
-> **Alpha.** The first release covers zones as media players and a media browser for the
-> playlists of the server. Clients, equalizer, search, services and diagnostics follow. Entities
+> **Alpha.** The integration covers zones as media players, a media browser, search, the
+> clients and the zone settings. The entities of the server itself follow. Entities
 > and options may still change between 0.x releases. The integration needs SnapDog 0.31.0 or newer.
 
 ## Requirements
@@ -95,17 +95,18 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese. |
 | 🏠 **Server, zones and clients as devices** | One device for the server, one per zone and one per client (speaker). |
 | 🔈 **Client entities** | Volume (up to the maximum the server allows for the client), mute, latency, the zone the client plays in (choosing another one moves it) and whether it is connected. A SnapDog client also has the equalizer switch, the equalizer preset and the speaker correction. A plain Snapcast client has neither. |
-| 🧭 **Zone entities** | Next to the player, every zone has whether it is occupied (a sensor, because reporting presence makes the server start playing), the switch of its presence automation, the presence timeout in seconds, whether the auto-off countdown runs, and the equalizer switch and preset. The switches, the timeout and the preset are configuration entities. |
+| 🧭 **Zone entities** | Next to the player, every zone has whether it is occupied (a sensor, because reporting presence makes the server start playing), the switch of its presence automation, the presence timeout in seconds, whether the auto-off countdown runs, and the equalizer switch and preset. The switches, the timeout and the preset are configuration entities. Two buttons move the zone to the next or the previous playlist (they are unavailable when the server has no further playlist in that direction). An `event` entity fires when the zone cannot play, with the `message`, the `details` and whether the error is `recoverable`. Three diagnostic sensors show the source, the bitrate and the content type, and are off until you enable them. |
 | 🎚️ **Client actions** | `snapdog.move_client`, `rename_client`, `apply_speaker_profile`, `set_client_eq` and `set_client_eq_band`. Target the volume entity or the device of the client. Bands of `set_client_eq_band` count from 1. |
+| 🎛️ **Zone actions** | `snapdog.set_zone_eq` and `snapdog.set_zone_eq_band`, the same as for a client. Target the media player of the zone. Bands of `set_zone_eq_band` count from 1. |
 
 The latency, the name, the equalizer and the speaker correction of a client, and the equalizer and
 presence of a zone, follow the events of the server, so a change made in the web interface shows
 up at once. They are read once at every connect, in case an event was missed while the connection
-was down. The server sends no event when the presence timeout changes, so a change made outside
-Home Assistant (KNX, MQTT) shows up at the next connect.
+was down. SnapDog servers from 0.36 send the presence timeout with the presence event, so a change
+made outside Home Assistant (KNX, MQTT) shows up at once. An older server sends no event when the
+timeout changes, and the change shows up at the next connect.
 
-Planned next: server entities (version, counts, update, KNX programming mode), the `event` for
-playback errors, the playlist buttons and the diagnostic sensors of the zones.
+Planned next: server entities (version, counts, update, KNX programming mode).
 
 ### Client identity
 

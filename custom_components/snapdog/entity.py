@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable
-from typing import TypeVar
+from collections.abc import Awaitable, Callable, Mapping
+from typing import Any, TypeVar
 
+import probatio
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
@@ -12,12 +13,36 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pysnapdog import Client, EqBand, EqConfig, SnapDogError, SnapDogReadOnlyError
+from pysnapdog import Client, EqBand, EqConfig, FilterType, SnapDogError, SnapDogReadOnlyError
 
 from .const import CONF_SERVER_ID, DOMAIN
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 
 _T = TypeVar("_T")
+
+# The fields of one band of an equalizer, as the actions of a client and of a zone take them.
+EQ_BAND_FIELDS: dict[Any, Any] = {
+    probatio.Required("freq"): probatio.All(probatio.Coerce(float), probatio.Range(min=1)),
+    probatio.Required("gain"): probatio.Coerce(float),
+    probatio.Required("q"): probatio.All(probatio.Coerce(float), probatio.Range(min=0.01)),
+    probatio.Required("type"): probatio.In([str(kind) for kind in FilterType]),
+}
+
+
+def eq_band(value: Mapping[str, Any]) -> EqBand:
+    """Build a band from the fields an action was called with."""
+    return EqBand(
+        freq=value["freq"], gain=value["gain"], q=value["q"], type=FilterType(value["type"])
+    )
+
+
+def merged_eq(current: EqConfig, enabled: bool | None, bands: list[EqBand] | None) -> EqConfig:
+    """The equalizer after a change. A new set of bands is no longer the preset it was."""
+    return EqConfig(
+        enabled=current.enabled if enabled is None else enabled,
+        bands=current.bands if bands is None else tuple(bands),
+        preset=current.preset if bands is None else None,
+    )
 
 
 class SnapDogEntity(CoordinatorEntity[SnapDogCoordinator]):
@@ -51,6 +76,36 @@ class SnapDogEntity(CoordinatorEntity[SnapDogCoordinator]):
             and super().available
             and self._zone in self.coordinator.data.zones
         )
+
+    async def replace_zone_eq(self, *, enabled: bool | None, bands: list[EqBand] | None) -> None:
+        """Replace the bands of the equalizer of the zone, switch it, or both."""
+        if enabled is None and bands is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="nothing_to_change"
+            )
+        current = self.coordinator.data.zone_eq.get(self._zone)
+        if current is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="eq_unknown",
+                translation_placeholders={"name": self.coordinator.data.zones[self._zone].name},
+            )
+        stored = await request(
+            self.coordinator.api.set_zone_eq(self._zone, merged_eq(current, enabled, bands))
+        )
+        self.coordinator.set_zone_eq(self._zone, stored)
+
+    async def replace_zone_band(self, band: int, value: EqBand) -> None:
+        """Change one band of the equalizer of the zone. ``band`` counts from 1."""
+        current = self.coordinator.data.zone_eq.get(self._zone)
+        if current is not None and band > len(current.bands):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="unknown_band",
+                translation_placeholders={"band": str(band), "count": str(len(current.bands))},
+            )
+        stored = await request(self.coordinator.api.set_zone_eq_band(self._zone, band - 1, value))
+        self.coordinator.set_zone_eq(self._zone, stored)
 
 
 type ZoneEntityFactory = Callable[[SnapDogCoordinator, int], list[Entity]]
@@ -174,11 +229,7 @@ class SnapDogClientEntity(CoordinatorEntity[SnapDogCoordinator]):
                 translation_key="eq_unknown",
                 translation_placeholders={"name": client.name},
             )
-        config = EqConfig(
-            enabled=current.enabled if enabled is None else enabled,
-            bands=current.bands if bands is None else tuple(bands),
-            preset=current.preset if bands is None else None,
-        )
+        config = merged_eq(current, enabled, bands)
         stored = await request(self.coordinator.api.set_client_eq(client.index, config))
         self.coordinator.set_client_eq(client.index, stored)
 
