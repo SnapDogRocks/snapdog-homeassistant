@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.3.1...v0.4.0) (2026-11-15)
+
+
+### Features
+
+* **zones:** add playback error event, playlist buttons, diagnostics and equalizer actions ([#32](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/32)) ([131d05a](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/131d05a87ea59ff6da1e7a9e05f22c06f887571c))
+* **zones:** add presence and equalizer entities ([#30](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/30)) ([3e29b8b](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/3e29b8b913f79535f246f48143ca1d9b6bcad56f))
+
 ## [0.3.1](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.3.0...v0.3.1) (2026-11-14)
 
 
