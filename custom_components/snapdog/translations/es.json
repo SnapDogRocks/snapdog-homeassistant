@@ -356,6 +356,9 @@
       },
       "presence_control": {
         "name": "Control de presencia"
+      },
+      "knx_programming_mode": {
+        "name": "Modo de programación KNX"
       }
     },
     "button": {
@@ -380,6 +383,23 @@
       },
       "content_type": {
         "name": "Tipo de contenido"
+      },
+      "version": {
+        "name": "Versión"
+      },
+      "zones_count": {
+        "name": "Zonas"
+      },
+      "clients_count": {
+        "name": "Clientes"
+      },
+      "radios_count": {
+        "name": "Emisoras de radio"
+      }
+    },
+    "update": {
+      "server": {
+        "name": "Servidor"
       }
     }
   }

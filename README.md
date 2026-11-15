@@ -26,8 +26,8 @@ Assistant shows up everywhere within a moment. It uses the client library
 
 > [!NOTE]
 > **Alpha.** The integration covers zones as media players, a media browser, search, the
-> clients and the zone settings. The entities of the server itself follow. Entities
-> and options may still change between 0.x releases. The integration needs SnapDog 0.31.0 or newer.
+> clients, the zone settings and the server itself. Entities and options may still change
+> between 0.x releases. The integration needs SnapDog 0.31.0 or newer.
 
 ## Requirements
 
@@ -97,6 +97,7 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🔈 **Client entities** | Volume (up to the maximum the server allows for the client), mute, latency, the zone the client plays in (choosing another one moves it) and whether it is connected. A SnapDog client also has the equalizer switch, the equalizer preset and the speaker correction. A plain Snapcast client has neither. |
 | 🧭 **Zone entities** | Next to the player, every zone has whether it is occupied (a sensor, because reporting presence makes the server start playing), the switch of its presence automation, the presence timeout in seconds, whether the auto-off countdown runs, and the equalizer switch and preset. The switches, the timeout and the preset are configuration entities. Two buttons move the zone to the next or the previous playlist (they are unavailable when the server has no further playlist in that direction). An `event` entity fires when the zone cannot play, with the `message`, the `details` and whether the error is `recoverable`. Three diagnostic sensors show the source, the bitrate and the content type, and are off until you enable them. |
 | 🎚️ **Client actions** | `snapdog.move_client`, `rename_client`, `apply_speaker_profile`, `set_client_eq` and `set_client_eq_band`. Target the volume entity or the device of the client. Bands of `set_client_eq_band` count from 1. |
+| 🖥️ **Server entities** | The device of the server shows its version (with the Rust version as an attribute) and, as sensors that are off until you enable them, how many zones, clients and radio stations it has. With the Docker updater sidecar the server also has an **update** entity: it shows the release that runs and the newest one found, and installs it (the server restarts and the entities are unavailable until it is back). A server that runs as a KNX device has a switch for its **KNX programming mode**, which ETS needs to give it a physical address. The update and the switch appear only when the server has them. |
 | 🎛️ **Zone actions** | `snapdog.set_zone_eq` and `snapdog.set_zone_eq_band`, the same as for a client. Target the media player of the zone. Bands of `set_zone_eq_band` count from 1. |
 
 The latency, the name, the equalizer and the speaker correction of a client, and the equalizer and
@@ -106,7 +107,7 @@ was down. SnapDog servers from 0.36 send the presence timeout with the presence 
 made outside Home Assistant (KNX, MQTT) shows up at once. An older server sends no event when the
 timeout changes, and the change shows up at the next connect.
 
-Planned next: server entities (version, counts, update, KNX programming mode).
+The server sends no events for its own state, so the counts, the updater and the KNX programming mode are read again every minute. A change made elsewhere shows up within that time.
 
 ### Client identity
 

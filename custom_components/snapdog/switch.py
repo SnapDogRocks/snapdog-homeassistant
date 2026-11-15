@@ -1,4 +1,4 @@
-"""Mute and equalizer of a client, presence control and equalizer of a zone."""
+"""Mute and equalizer of a client, presence control and equalizer of a zone, KNX programming."""
 
 from __future__ import annotations
 
@@ -15,7 +15,9 @@ from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
 from .entity import (
     SnapDogClientEntity,
     SnapDogEntity,
+    SnapDogServerEntity,
     async_setup_client_entities,
+    async_setup_optional_server_entity,
     async_setup_zone_entities,
     request,
 )
@@ -39,6 +41,12 @@ async def async_setup_entry(
             ZonePresenceControl(coordinator, zone),
             ZoneEq(coordinator, zone),
         ],
+    )
+    async_setup_optional_server_entity(
+        entry,
+        async_add_entities,
+        lambda data: data.knx_programming_mode is not None,
+        KnxProgrammingMode,
     )
     async_setup_client_entities(
         entry, async_add_entities, lambda coordinator, mac: [ClientMute(coordinator, mac)]
@@ -192,3 +200,41 @@ class ZoneEq(SnapDogEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Switch the equalizer off."""
         await self._enable(False)
+
+
+class KnxProgrammingMode(SnapDogServerEntity, SwitchEntity):
+    """The KNX programming mode of the server, which ETS needs to give it a physical address.
+
+    The server has this only when it runs as a KNX device. Left on, it stays on until it is
+    switched off, as on any KNX device with a programming button.
+    """
+
+    _attr_translation_key = "knx_programming_mode"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: SnapDogCoordinator) -> None:
+        """Set the identity."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{self._server_id}_knx_programming_mode"
+
+    @property
+    def available(self) -> bool:
+        """Whether the server is reachable and still runs as a KNX device."""
+        return super().available and self.coordinator.data.knx_programming_mode is not None
+
+    @property
+    def is_on(self) -> bool | None:
+        """The programming mode the server reports."""
+        return self.coordinator.data.knx_programming_mode
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Switch the programming mode on."""
+        self.coordinator.set_knx_programming_mode(
+            await request(self.coordinator.api.set_knx_programming_mode(True))
+        )
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Switch the programming mode off."""
+        self.coordinator.set_knx_programming_mode(
+            await request(self.coordinator.api.set_knx_programming_mode(False))
+        )

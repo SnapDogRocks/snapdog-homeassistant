@@ -356,6 +356,9 @@
       },
       "presence_control": {
         "name": "Sterowanie obecnością"
+      },
+      "knx_programming_mode": {
+        "name": "Tryb programowania KNX"
       }
     },
     "button": {
@@ -380,6 +383,23 @@
       },
       "content_type": {
         "name": "Typ zawartości"
+      },
+      "version": {
+        "name": "Wersja"
+      },
+      "zones_count": {
+        "name": "Strefy"
+      },
+      "clients_count": {
+        "name": "Klienci"
+      },
+      "radios_count": {
+        "name": "Stacje radiowe"
+      }
+    },
+    "update": {
+      "server": {
+        "name": "Serwer"
       }
     }
   }

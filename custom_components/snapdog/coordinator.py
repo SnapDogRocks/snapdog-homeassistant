@@ -5,6 +5,7 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -13,6 +14,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from pysnapdog import (
     Client,
@@ -28,7 +30,10 @@ from pysnapdog import (
     SnapDogClient,
     SnapDogError,
     SnapDogListener,
+    SnapDogResponseError,
+    SystemStatus,
     TrackMetadata,
+    UpdateStatus,
     VersionInfo,
     Zone,
     ZoneChanged,
@@ -46,6 +51,10 @@ from .const import (
     LOGGER,
 )
 from .layout import ZoneLayout
+
+# The server sends no event for what its own entities show (the counts, the updater, the KNX
+# programming mode), so they are read again at this interval while the socket is up.
+SERVER_POLL_INTERVAL = timedelta(seconds=60)
 
 type SnapDogConfigEntry = ConfigEntry[SnapDogCoordinator]
 
@@ -72,14 +81,21 @@ class SnapDogData:
     # connect and follows the changes made through this integration.
     zone_eq: dict[int, EqConfig] = field(default_factory=dict)
     zone_presence_timeout: dict[int, int] = field(default_factory=dict)
+    # The server itself. ``None`` means the server has no such thing: no updater sidecar outside
+    # the Docker deployment, and no programming mode unless it runs as a KNX device.
+    status: SystemStatus | None = None
+    update: UpdateStatus | None = None
+    knx_programming_mode: bool | None = None
 
 
 class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
     """Load the state over REST and keep it current from the WebSocket.
 
-    There is no polling. The listener opens the socket, calls ``_load`` and then delivers
-    events, again after every reconnect and after the server closed the socket because this
-    client fell behind. While the socket is down every entity is unavailable.
+    The zones and clients are not polled. The listener opens the socket, calls ``_load`` and then
+    delivers events, again after every reconnect and after the server closed the socket because
+    this client fell behind. While the socket is down every entity is unavailable. Only what the
+    server never announces, its counts, its updater and its KNX programming mode, is read again
+    every minute.
     """
 
     config_entry: SnapDogConfigEntry
@@ -128,6 +144,9 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             raise ConfigEntryNotReady(f"cannot read the SnapDog server: {err}") from err
         await self.layout.async_check(self.data.zones)
         self._listener.start()
+        self.config_entry.async_on_unload(
+            async_track_time_interval(self.hass, self._poll_server, SERVER_POLL_INTERVAL)
+        )
 
     async def async_stop(self) -> None:
         """Close the socket."""
@@ -146,7 +165,63 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
         )
         await self._load_client_settings(data)
         await self._load_zone_settings(data)
+        await self._load_server_state(data, self.data)
         return data
+
+    async def _load_server_state(self, data: SnapDogData, previous: SnapDogData | None) -> None:
+        """Read the counts, the updater and the KNX programming mode of the server.
+
+        An answer with an error status (no updater, no KNX device mode) means the server has no
+        such thing. A connection that fails keeps what was known before.
+        """
+        api = self.api
+        if previous is not None:
+            data.status = previous.status
+            data.update = previous.update
+            data.knx_programming_mode = previous.knx_programming_mode
+        try:
+            data.status = await api.status()
+        except SnapDogAuthError:
+            raise
+        except SnapDogError as err:
+            LOGGER.debug("Cannot read the status of the server: %s", err)
+        try:
+            data.update = await api.update_status()
+        except SnapDogAuthError:
+            raise
+        except SnapDogResponseError:
+            data.update = None
+        except SnapDogError as err:
+            LOGGER.debug("Cannot read the updater: %s", err)
+        try:
+            data.knx_programming_mode = await api.knx_programming_mode()
+        except SnapDogAuthError:
+            raise
+        except SnapDogResponseError:
+            data.knx_programming_mode = None
+        except SnapDogError as err:
+            LOGGER.debug("Cannot read the KNX programming mode: %s", err)
+
+    async def _poll_server(self, _now: datetime) -> None:
+        """Read the state of the server again. Nothing happens while the socket is down."""
+        if not self.connected:
+            return
+        try:
+            await self._load_server_state(self.data, None)
+        except SnapDogAuthError:
+            self.config_entry.async_start_reauth(self.hass)
+            return
+        self.async_set_updated_data(self.data)
+
+    def set_knx_programming_mode(self, enabled: bool) -> None:
+        """Remember the programming mode the server stored."""
+        self.data.knx_programming_mode = enabled
+        self.async_set_updated_data(self.data)
+
+    def set_update(self, status: UpdateStatus) -> None:
+        """Remember the state of the updater the server answered."""
+        self.data.update = status
+        self.async_set_updated_data(self.data)
 
     async def _load_zone_settings(self, data: SnapDogData) -> None:
         """Read what the events do not carry. A zone that cannot answer stays without it."""
