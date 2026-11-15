@@ -1,4 +1,4 @@
-"""Zone, speaker correction and equalizer preset of a client."""
+"""Zone, speaker correction and equalizer preset of a client, equalizer preset of a zone."""
 
 from __future__ import annotations
 
@@ -10,7 +10,13 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import CONF_SERVER_ID, DOMAIN
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
-from .entity import SnapDogClientEntity, async_setup_client_entities, request
+from .entity import (
+    SnapDogClientEntity,
+    SnapDogEntity,
+    async_setup_client_entities,
+    async_setup_zone_entities,
+    request,
+)
 
 PARALLEL_UPDATES = 1
 
@@ -20,7 +26,13 @@ async def async_setup_entry(
     entry: SnapDogConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add the zone select to every client, the other two to every SnapDog client."""
+    """Add the zone select to every client, the other two to every SnapDog client.
+
+    Every zone gets the select of its equalizer preset.
+    """
+    async_setup_zone_entities(
+        entry, async_add_entities, lambda coordinator, zone: [ZoneEqPreset(coordinator, zone)]
+    )
     async_setup_client_entities(
         entry, async_add_entities, lambda coordinator, mac: [ClientZone(coordinator, mac)]
     )
@@ -173,3 +185,46 @@ class ClientEqPreset(_SnapDogClientSelect):
         client = self.client
         stored = await request(self.coordinator.api.apply_client_eq_preset(client.index, option))
         self.coordinator.set_client_eq(client.index, stored)
+
+
+class ZoneEqPreset(SnapDogEntity, SelectEntity):
+    """The equalizer preset of a zone."""
+
+    _attr_translation_key = "eq_preset"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_eq_preset"
+
+    @property
+    def available(self) -> bool:
+        """Whether the equalizer was read and the server offers presets."""
+        data = self.coordinator.data
+        return super().available and self._zone in data.zone_eq and bool(data.eq_presets)
+
+    @property
+    def options(self) -> list[str]:
+        """What the server offers."""
+        return list(self.coordinator.data.eq_presets)
+
+    @property
+    def current_option(self) -> str | None:
+        """The preset the equalizer was loaded from, ``None`` when it was edited since."""
+        config = self.coordinator.data.zone_eq.get(self._zone)
+        if config is None or config.preset not in self.coordinator.data.eq_presets:
+            return None
+        return config.preset
+
+    async def async_select_option(self, option: str) -> None:
+        """Apply the preset."""
+        if option not in self.coordinator.data.eq_presets:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="unknown_option",
+                translation_placeholders={"option": option},
+            )
+        stored = await request(self.coordinator.api.apply_zone_eq_preset(self._zone, option))
+        self.coordinator.set_zone_eq(self._zone, stored)

@@ -195,6 +195,8 @@ def api() -> Generator[MagicMock]:
         client.eq_presets = AsyncMock(
             return_value=[EqPreset("Flat", make_eq().bands), EqPreset("Bass", make_eq().bands)]
         )
+        client.zone_eq = AsyncMock(return_value=make_eq())
+        client.zone_presence_timeout = AsyncMock(return_value=900)
         client.speakers = AsyncMock(return_value=["Genelec 8030C", "KEF LS50"])
         client.zone_track = AsyncMock(return_value=make_track())
         client.playlists = AsyncMock(
@@ -233,6 +235,10 @@ def api() -> Generator[MagicMock]:
             "set_client_zone",
         ):
             setattr(client, name, AsyncMock(return_value=None))
+        client.set_zone_eq = AsyncMock(side_effect=lambda _index, config: config)
+        client.apply_zone_eq_preset = AsyncMock(return_value=make_eq(preset="Bass"))
+        client.set_zone_presence_enabled = AsyncMock(return_value=None)
+        client.set_zone_presence_timeout = AsyncMock(return_value=None)
         client.set_client_latency = AsyncMock(side_effect=lambda _index, value: value)
         client.rename_client = AsyncMock(side_effect=lambda _index, name: name)
         client.set_client_eq = AsyncMock(side_effect=lambda _index, config: config)

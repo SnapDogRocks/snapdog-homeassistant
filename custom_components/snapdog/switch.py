@@ -1,4 +1,4 @@
-"""Mute and equalizer of a client."""
+"""Mute and equalizer of a client, presence control and equalizer of a zone."""
 
 from __future__ import annotations
 
@@ -12,7 +12,13 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import CONF_SERVER_ID
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
-from .entity import SnapDogClientEntity, async_setup_client_entities, request
+from .entity import (
+    SnapDogClientEntity,
+    SnapDogEntity,
+    async_setup_client_entities,
+    async_setup_zone_entities,
+    request,
+)
 
 PARALLEL_UPDATES = 1
 
@@ -22,7 +28,18 @@ async def async_setup_entry(
     entry: SnapDogConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add a mute switch to every client and an equalizer switch to every SnapDog client."""
+    """Add a mute switch to every client and an equalizer switch to every SnapDog client.
+
+    Every zone gets the switch of its presence automation and of its equalizer.
+    """
+    async_setup_zone_entities(
+        entry,
+        async_add_entities,
+        lambda coordinator, zone: [
+            ZonePresenceControl(coordinator, zone),
+            ZoneEq(coordinator, zone),
+        ],
+    )
     async_setup_client_entities(
         entry, async_add_entities, lambda coordinator, mac: [ClientMute(coordinator, mac)]
     )
@@ -100,6 +117,73 @@ class ClientEq(SnapDogClientEntity, SwitchEntity):
             )
         )
         self.coordinator.set_client_eq(client.index, stored)
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Switch the equalizer on."""
+        await self._enable(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Switch the equalizer off."""
+        await self._enable(False)
+
+
+class ZonePresenceControl(SnapDogEntity, SwitchEntity):
+    """Whether the zone follows presence at all. Off, the server ignores what a detector says."""
+
+    _attr_translation_key = "presence_control"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_presence_control"
+
+    @property
+    def is_on(self) -> bool:
+        """The automation the server reports."""
+        return self.coordinator.data.zones[self._zone].presence_enabled
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Let the zone follow presence."""
+        await request(self.coordinator.api.set_zone_presence_enabled(self._zone, True))
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Stop the zone from following presence."""
+        await request(self.coordinator.api.set_zone_presence_enabled(self._zone, False))
+
+
+class ZoneEq(SnapDogEntity, SwitchEntity):
+    """Whether the equalizer of the zone is on. The bands stay as they are."""
+
+    _attr_translation_key = "eq"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_eq"
+
+    @property
+    def available(self) -> bool:
+        """Only once the server has told the equalizer."""
+        return super().available and self._zone in self.coordinator.data.zone_eq
+
+    @property
+    def is_on(self) -> bool | None:
+        """Whether the equalizer is enabled."""
+        config = self.coordinator.data.zone_eq.get(self._zone)
+        return config.enabled if config is not None else None
+
+    async def _enable(self, enabled: bool) -> None:
+        config = self.coordinator.data.zone_eq[self._zone]
+        stored = await request(
+            self.coordinator.api.set_zone_eq(
+                self._zone, dataclasses.replace(config, enabled=enabled)
+            )
+        )
+        self.coordinator.set_zone_eq(self._zone, stored)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Switch the equalizer on."""
