@@ -53,6 +53,30 @@ class SnapDogEntity(CoordinatorEntity[SnapDogCoordinator]):
         )
 
 
+type ZoneEntityFactory = Callable[[SnapDogCoordinator, int], list[Entity]]
+
+
+def async_setup_zone_entities(
+    entry: SnapDogConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+    factory: ZoneEntityFactory,
+) -> None:
+    """Add the entities of every zone the server has, and of zones that appear later."""
+    coordinator = entry.runtime_data
+    known: set[int] = set()
+
+    @callback
+    def add_new_zones() -> None:
+        new = sorted(set(coordinator.data.zones) - known)
+        known.update(new)
+        entities = [entity for zone in new for entity in factory(coordinator, zone)]
+        if entities:
+            async_add_entities(entities)
+
+    add_new_zones()
+    entry.async_on_unload(coordinator.async_add_listener(add_new_zones))
+
+
 class SnapDogClientEntity(CoordinatorEntity[SnapDogCoordinator]):
     """An entity of one client (a speaker). Unavailable while the WebSocket is down.
 

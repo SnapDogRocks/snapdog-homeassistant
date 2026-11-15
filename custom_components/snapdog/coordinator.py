@@ -30,6 +30,8 @@ from pysnapdog import (
     VersionInfo,
     Zone,
     ZoneChanged,
+    ZoneEqChanged,
+    ZonePresenceChanged,
     ZoneVolumeChanged,
 )
 
@@ -63,6 +65,11 @@ class SnapDogData:
     client_speaker: dict[int, EqConfig] = field(default_factory=dict)
     eq_presets: list[str] = field(default_factory=list)
     speakers: list[str] = field(default_factory=list)
+    # The same for a zone: its equalizer is sent as an event, the presence timeout is not (the
+    # server sends nothing when it changes), so it is read at every connect and follows the
+    # changes made through this integration.
+    zone_eq: dict[int, EqConfig] = field(default_factory=dict)
+    zone_presence_timeout: dict[int, int] = field(default_factory=dict)
 
 
 class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
@@ -122,7 +129,19 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             version=version, zones=zones, tracks=tracks, clients=clients, playlists=playlists
         )
         await self._load_client_settings(data)
+        await self._load_zone_settings(data)
         return data
+
+    async def _load_zone_settings(self, data: SnapDogData) -> None:
+        """Read what the events do not carry. A zone that cannot answer stays without it."""
+        for index in data.zones:
+            try:
+                data.zone_eq[index] = await self.api.zone_eq(index)
+                data.zone_presence_timeout[index] = await self.api.zone_presence_timeout(index)
+            except SnapDogAuthError:
+                raise
+            except SnapDogError as err:
+                LOGGER.debug("Cannot read the settings of zone %s: %s", index, err)
 
     async def _load_client_settings(self, data: SnapDogData) -> None:
         """Read what the events do not carry. A client that cannot answer stays without it."""
@@ -143,17 +162,27 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             LOGGER.debug("Cannot read the settings of client %s: %s", index, err)
 
     async def _read_eq_catalogue(self, data: SnapDogData) -> None:
+        """Read the equalizer presets, and the speaker profiles when a SnapDog client needs them.
+
+        The presets are for the equalizer of the zones as much as for the clients'. The speaker
+        profiles come from a catalogue outside the server and may be out of reach. The selects
+        then have no options and the rest keeps working.
+        """
+        if data.zones:
+            try:
+                data.eq_presets = [preset.name for preset in await self.api.eq_presets()]
+            except SnapDogAuthError:
+                raise
+            except SnapDogError as err:
+                LOGGER.debug("Cannot read the EQ presets: %s", err)
         if not any(client.is_snapdog for client in data.clients.values()):
             return
         try:
-            data.eq_presets = [preset.name for preset in await self.api.eq_presets()]
             data.speakers = await self.api.speakers()
         except SnapDogAuthError:
             raise
         except SnapDogError as err:
-            # The speaker profiles come from a catalogue outside the server and may be out of
-            # reach. The selects then have no options and the rest keeps working.
-            LOGGER.debug("Cannot read the EQ presets or the speaker profiles: %s", err)
+            LOGGER.debug("Cannot read the speaker profiles: %s", err)
 
     def client_by_mac(self, mac: str) -> Client | None:
         """Find a client by its MAC address, whatever its position in the configuration."""
@@ -176,6 +205,16 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
     def set_client_eq(self, index: int, config: EqConfig) -> None:
         """Remember the equalizer the server stored."""
         self.data.client_eq[index] = config
+        self.async_set_updated_data(self.data)
+
+    def set_zone_eq(self, index: int, config: EqConfig) -> None:
+        """Remember the equalizer the server stored for a zone."""
+        self.data.zone_eq[index] = config
+        self.async_set_updated_data(self.data)
+
+    def set_zone_presence_timeout(self, index: int, seconds: int) -> None:
+        """Remember the timeout the server was given, which it reports nowhere else."""
+        self.data.zone_presence_timeout[index] = seconds
         self.async_set_updated_data(self.data)
 
     def set_client_speaker(self, index: int, config: EqConfig) -> None:
@@ -250,6 +289,9 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
                 data.zones[event.zone] = dataclasses.replace(
                     data.zones[event.zone], volume=event.volume, muted=event.muted
                 )
+            case ZoneEqChanged() | ZonePresenceChanged():
+                if not self._fold_zone_setting_event(event, data):
+                    return
             case ClientStateChanged() | ClientEqChanged() | ClientSpeakerChanged():
                 if not await self._fold_client_event(event, data):
                     return
@@ -264,6 +306,25 @@ class SnapDogCoordinator(DataUpdateCoordinator[SnapDogData]):
             case _:
                 return
         self.async_set_updated_data(data)
+
+    @staticmethod
+    def _fold_zone_setting_event(
+        event: ZoneEqChanged | ZonePresenceChanged, data: SnapDogData
+    ) -> bool:
+        """Fold an event about the equalizer or presence of a zone. ``False`` if it is unknown."""
+        if event.zone not in data.zones:
+            return False
+        match event:
+            case ZoneEqChanged():
+                data.zone_eq[event.zone] = event.config
+            case ZonePresenceChanged():
+                data.zones[event.zone] = dataclasses.replace(
+                    data.zones[event.zone],
+                    presence=event.presence,
+                    presence_enabled=event.enabled,
+                    presence_timer_active=event.timer_active,
+                )
+        return True
 
     async def _fold_client_event(
         self, event: ClientStateChanged | ClientEqChanged | ClientSpeakerChanged, data: SnapDogData

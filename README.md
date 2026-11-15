@@ -95,14 +95,17 @@ If the server rejects the key later, Home Assistant asks for a new one and keeps
 | 🌍 **Eight languages** | English, German, French, Spanish, Italian, Dutch, Polish and Portuguese. |
 | 🏠 **Server, zones and clients as devices** | One device for the server, one per zone and one per client (speaker). |
 | 🔈 **Client entities** | Volume (up to the maximum the server allows for the client), mute, latency, the zone the client plays in (choosing another one moves it) and whether it is connected. A SnapDog client also has the equalizer switch, the equalizer preset and the speaker correction. A plain Snapcast client has neither. |
+| 🧭 **Zone entities** | Next to the player, every zone has whether it is occupied (a sensor, because reporting presence makes the server start playing), the switch of its presence automation, the presence timeout in seconds, whether the auto-off countdown runs, and the equalizer switch and preset. The switches, the timeout and the preset are configuration entities. |
 | 🎚️ **Client actions** | `snapdog.move_client`, `rename_client`, `apply_speaker_profile`, `set_client_eq` and `set_client_eq_band`. Target the volume entity or the device of the client. Bands of `set_client_eq_band` count from 1. |
 
-The latency, the name, the equalizer and the speaker correction of a client follow the events of
-the server, so a change made in the web interface shows up at once. They are read once at every
-connect, in case an event was missed while the connection was down.
+The latency, the name, the equalizer and the speaker correction of a client, and the equalizer and
+presence of a zone, follow the events of the server, so a change made in the web interface shows
+up at once. They are read once at every connect, in case an event was missed while the connection
+was down. The server sends no event when the presence timeout changes, so a change made outside
+Home Assistant (KNX, MQTT) shows up at the next connect.
 
-Planned next: server entities (version, counts, update, KNX programming mode), the presence and
-equalizer entities of the zones and the `event` for playback errors.
+Planned next: server entities (version, counts, update, KNX programming mode), the `event` for
+playback errors, the playlist buttons and the diagnostic sensors of the zones.
 
 ### Client identity
 

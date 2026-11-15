@@ -1,4 +1,4 @@
-"""Volume and latency of a client."""
+"""Volume and latency of a client, presence timeout of a zone."""
 
 from __future__ import annotations
 
@@ -16,11 +16,18 @@ from pysnapdog import EqBand, FilterType
 
 from .const import CONF_SERVER_ID
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
-from .entity import SnapDogClientEntity, async_setup_client_entities, request
+from .entity import (
+    SnapDogClientEntity,
+    SnapDogEntity,
+    async_setup_client_entities,
+    async_setup_zone_entities,
+    request,
+)
 
 PARALLEL_UPDATES = 1
 
 LATENCY_LIMIT = 10_000
+PRESENCE_TIMEOUT_LIMIT = 65_535
 
 ATTR_ZONE = "zone"
 ATTR_NAME = "name"
@@ -65,6 +72,11 @@ async def async_setup_entry(
         entry,
         async_add_entities,
         lambda coordinator, mac: [ClientVolume(coordinator, mac), ClientLatency(coordinator, mac)],
+    )
+    async_setup_zone_entities(
+        entry,
+        async_add_entities,
+        lambda coordinator, zone: [ZonePresenceTimeout(coordinator, zone)],
     )
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
@@ -179,3 +191,32 @@ class ClientLatency(SnapDogClientEntity, NumberEntity):
         client = self.client
         stored = await request(self.coordinator.api.set_client_latency(client.index, round(value)))
         self.coordinator.set_client_latency(client.index, stored)
+
+
+class ZonePresenceTimeout(SnapDogEntity, NumberEntity):
+    """How long the zone keeps playing after presence ended, before the server switches it off."""
+
+    _attr_translation_key = "presence_timeout"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_native_min_value = 0
+    _attr_native_max_value = PRESENCE_TIMEOUT_LIMIT
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+    _attr_mode = NumberMode.BOX
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_presence_timeout"
+
+    @property
+    def native_value(self) -> float | None:
+        """The timeout read from the server. ``None`` when the server did not answer."""
+        return self.coordinator.data.zone_presence_timeout.get(self._zone)
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the timeout. The server sends no event for it, so the request is the state."""
+        seconds = round(value)
+        await request(self.coordinator.api.set_zone_presence_timeout(self._zone, seconds))
+        self.coordinator.set_zone_presence_timeout(self._zone, seconds)

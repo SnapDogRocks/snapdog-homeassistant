@@ -277,6 +277,12 @@
     "binary_sensor": {
       "connected": {
         "name": "Connesso"
+      },
+      "presence": {
+        "name": "Presenza"
+      },
+      "presence_timer": {
+        "name": "Timer di presenza"
       }
     },
     "number": {
@@ -285,6 +291,9 @@
       },
       "latency": {
         "name": "Latenza"
+      },
+      "presence_timeout": {
+        "name": "Timeout di presenza"
       }
     },
     "select": {
@@ -304,6 +313,9 @@
       },
       "eq": {
         "name": "Equalizzatore"
+      },
+      "presence_control": {
+        "name": "Controllo presenza"
       }
     }
   }

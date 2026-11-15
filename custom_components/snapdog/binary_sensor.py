@@ -1,4 +1,4 @@
-"""Whether a client is connected."""
+"""Whether a client is connected, whether a zone is occupied."""
 
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import CONF_SERVER_ID
 from .coordinator import SnapDogConfigEntry, SnapDogCoordinator
-from .entity import SnapDogClientEntity, async_setup_client_entities
+from .entity import (
+    SnapDogClientEntity,
+    SnapDogEntity,
+    async_setup_client_entities,
+    async_setup_zone_entities,
+)
 
 PARALLEL_UPDATES = 0
 
@@ -20,7 +25,15 @@ async def async_setup_entry(
     entry: SnapDogConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Add the connection state of every client."""
+    """Add the connection state of every client and the presence state of every zone."""
+    async_setup_zone_entities(
+        entry,
+        async_add_entities,
+        lambda coordinator, zone: [
+            ZonePresence(coordinator, zone),
+            ZonePresenceTimer(coordinator, zone),
+        ],
+    )
     async_setup_client_entities(
         entry, async_add_entities, lambda coordinator, mac: [ClientConnected(coordinator, mac)]
     )
@@ -44,3 +57,43 @@ class ClientConnected(SnapDogClientEntity, BinarySensorEntity):
         """Whether the server has the client."""
         client = self._client
         return client.connected if client is not None else None
+
+
+class ZonePresence(SnapDogEntity, BinarySensorEntity):
+    """Whether the server takes the zone as occupied.
+
+    Presence is an input of the server (a detector, KNX or the API). It is a sensor here and
+    never a switch: reporting presence makes the server start the playback of the zone.
+    """
+
+    _attr_translation_key = "presence"
+    _attr_device_class = BinarySensorDeviceClass.OCCUPANCY
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_presence"
+
+    @property
+    def is_on(self) -> bool:
+        """The presence the server reports."""
+        return self.coordinator.data.zones[self._zone].presence
+
+
+class ZonePresenceTimer(SnapDogEntity, BinarySensorEntity):
+    """Whether the countdown that switches the zone off after presence ended is running."""
+
+    _attr_translation_key = "presence_timer"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: SnapDogCoordinator, zone: int) -> None:
+        """Set the identity."""
+        super().__init__(coordinator, zone)
+        server_id = coordinator.config_entry.data[CONF_SERVER_ID]
+        self._attr_unique_id = f"{server_id}_zone_{zone}_presence_timer"
+
+    @property
+    def is_on(self) -> bool:
+        """Whether the auto-off timer runs."""
+        return self.coordinator.data.zones[self._zone].presence_timer_active
