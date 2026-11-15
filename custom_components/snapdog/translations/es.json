@@ -271,6 +271,46 @@
           "description": "La forma del filtro: low_shelf, high_shelf, peaking, low_pass o high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Ajustar el ecualizador de la zona",
+      "description": "Activa el ecualizador de una zona o sustituye todas sus bandas.",
+      "fields": {
+        "enabled": {
+          "name": "Activado",
+          "description": "Activa o desactiva el ecualizador."
+        },
+        "bands": {
+          "name": "Bandas",
+          "description": "Todas las bandas, en orden. Cada una tiene freq (Hz), gain (dB), q y type (low_shelf, high_shelf, peaking, low_pass o high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Ajustar una banda del ecualizador de la zona",
+      "description": "Cambia una banda del ecualizador de una zona.",
+      "fields": {
+        "band": {
+          "name": "Banda",
+          "description": "El número de la banda, contado desde 1."
+        },
+        "freq": {
+          "name": "Frecuencia",
+          "description": "La frecuencia central o de corte en Hz."
+        },
+        "gain": {
+          "name": "Ganancia",
+          "description": "La ganancia en dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "El factor de calidad."
+        },
+        "type": {
+          "name": "Tipo",
+          "description": "La forma del filtro: low_shelf, high_shelf, peaking, low_pass o high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Control de presencia"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Lista siguiente"
+      },
+      "previous_playlist": {
+        "name": "Lista anterior"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Error de reproducción"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Fuente"
+      },
+      "bitrate": {
+        "name": "Tasa de bits"
+      },
+      "content_type": {
+        "name": "Tipo de contenido"
       }
     }
   }

@@ -271,6 +271,46 @@
           "description": "Kształt filtra: low_shelf, high_shelf, peaking, low_pass lub high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Ustaw korektor strefy",
+      "description": "Włącza korektor strefy lub zastępuje wszystkie jego pasma.",
+      "fields": {
+        "enabled": {
+          "name": "Włączony",
+          "description": "Włącza lub wyłącza korektor."
+        },
+        "bands": {
+          "name": "Pasma",
+          "description": "Wszystkie pasma w kolejności. Każde ma freq (Hz), gain (dB), q i type (low_shelf, high_shelf, peaking, low_pass lub high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Ustaw pasmo korektora strefy",
+      "description": "Zmienia jedno pasmo korektora strefy.",
+      "fields": {
+        "band": {
+          "name": "Pasmo",
+          "description": "Numer pasma, liczony od 1."
+        },
+        "freq": {
+          "name": "Częstotliwość",
+          "description": "Częstotliwość środkowa lub graniczna w Hz."
+        },
+        "gain": {
+          "name": "Wzmocnienie",
+          "description": "Wzmocnienie w dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Współczynnik dobroci."
+        },
+        "type": {
+          "name": "Typ",
+          "description": "Kształt filtra: low_shelf, high_shelf, peaking, low_pass lub high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Sterowanie obecnością"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Następna playlista"
+      },
+      "previous_playlist": {
+        "name": "Poprzednia playlista"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Błąd odtwarzania"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Źródło"
+      },
+      "bitrate": {
+        "name": "Przepływność"
+      },
+      "content_type": {
+        "name": "Typ zawartości"
       }
     }
   }

@@ -271,6 +271,46 @@
           "description": "La forme du filtre : low_shelf, high_shelf, peaking, low_pass ou high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Régler l'égaliseur de la zone",
+      "description": "Active l'égaliseur d'une zone ou remplace toutes ses bandes.",
+      "fields": {
+        "enabled": {
+          "name": "Activé",
+          "description": "Active ou désactive l'égaliseur."
+        },
+        "bands": {
+          "name": "Bandes",
+          "description": "Toutes les bandes, dans l'ordre. Chacune a freq (Hz), gain (dB), q et type (low_shelf, high_shelf, peaking, low_pass ou high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Régler une bande de l'égaliseur de la zone",
+      "description": "Modifie une bande de l'égaliseur d'une zone.",
+      "fields": {
+        "band": {
+          "name": "Bande",
+          "description": "Le numéro de la bande, compté à partir de 1."
+        },
+        "freq": {
+          "name": "Fréquence",
+          "description": "La fréquence centrale ou de coupure en Hz."
+        },
+        "gain": {
+          "name": "Gain",
+          "description": "Le gain en dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "Le facteur de qualité."
+        },
+        "type": {
+          "name": "Type",
+          "description": "La forme du filtre : low_shelf, high_shelf, peaking, low_pass ou high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Contrôle de présence"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Playlist suivante"
+      },
+      "previous_playlist": {
+        "name": "Playlist précédente"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Erreur de lecture"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Source"
+      },
+      "bitrate": {
+        "name": "Débit binaire"
+      },
+      "content_type": {
+        "name": "Type de contenu"
       }
     }
   }

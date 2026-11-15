@@ -271,6 +271,46 @@
           "description": "The filter shape: low_shelf, high_shelf, peaking, low_pass or high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Set zone equalizer",
+      "description": "Switch the equalizer of a zone or replace all its bands.",
+      "fields": {
+        "enabled": {
+          "name": "Enabled",
+          "description": "Switch the equalizer on or off."
+        },
+        "bands": {
+          "name": "Bands",
+          "description": "All bands, in order. Each has freq (Hz), gain (dB), q and type (low_shelf, high_shelf, peaking, low_pass or high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Set zone equalizer band",
+      "description": "Change one band of the equalizer of a zone.",
+      "fields": {
+        "band": {
+          "name": "Band",
+          "description": "The number of the band, counted from 1."
+        },
+        "freq": {
+          "name": "Frequency",
+          "description": "The center or corner frequency in Hz."
+        },
+        "gain": {
+          "name": "Gain",
+          "description": "The gain in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "The quality factor."
+        },
+        "type": {
+          "name": "Type",
+          "description": "The filter shape: low_shelf, high_shelf, peaking, low_pass or high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Presence control"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Next playlist"
+      },
+      "previous_playlist": {
+        "name": "Previous playlist"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Playback error"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Source"
+      },
+      "bitrate": {
+        "name": "Bitrate"
+      },
+      "content_type": {
+        "name": "Content type"
       }
     }
   }

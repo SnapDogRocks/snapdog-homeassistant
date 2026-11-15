@@ -271,6 +271,46 @@
           "description": "A forma do filtro: low_shelf, high_shelf, peaking, low_pass ou high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Definir o equalizador da zona",
+      "description": "Liga o equalizador de uma zona ou substitui todas as suas bandas.",
+      "fields": {
+        "enabled": {
+          "name": "Ativo",
+          "description": "Liga ou desliga o equalizador."
+        },
+        "bands": {
+          "name": "Bandas",
+          "description": "Todas as bandas, por ordem. Cada uma tem freq (Hz), gain (dB), q e type (low_shelf, high_shelf, peaking, low_pass ou high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Definir uma banda do equalizador da zona",
+      "description": "Altera uma banda do equalizador de uma zona.",
+      "fields": {
+        "band": {
+          "name": "Banda",
+          "description": "O número da banda, contado a partir de 1."
+        },
+        "freq": {
+          "name": "Frequência",
+          "description": "A frequência central ou de corte em Hz."
+        },
+        "gain": {
+          "name": "Ganho",
+          "description": "O ganho em dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "O fator de qualidade."
+        },
+        "type": {
+          "name": "Tipo",
+          "description": "A forma do filtro: low_shelf, high_shelf, peaking, low_pass ou high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Controlo de presença"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Lista seguinte"
+      },
+      "previous_playlist": {
+        "name": "Lista anterior"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Erro de reprodução"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Fonte"
+      },
+      "bitrate": {
+        "name": "Taxa de bits"
+      },
+      "content_type": {
+        "name": "Tipo de conteúdo"
       }
     }
   }

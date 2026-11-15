@@ -271,6 +271,46 @@
           "description": "De filtervorm: low_shelf, high_shelf, peaking, low_pass of high_pass."
         }
       }
+    },
+    "set_zone_eq": {
+      "name": "Equalizer van de zone instellen",
+      "description": "Schakelt de equalizer van een zone in of vervangt al zijn banden.",
+      "fields": {
+        "enabled": {
+          "name": "Ingeschakeld",
+          "description": "Schakelt de equalizer in of uit."
+        },
+        "bands": {
+          "name": "Banden",
+          "description": "Alle banden, op volgorde. Elk heeft freq (Hz), gain (dB), q en type (low_shelf, high_shelf, peaking, low_pass of high_pass)."
+        }
+      }
+    },
+    "set_zone_eq_band": {
+      "name": "Band van de zone-equalizer instellen",
+      "description": "Wijzigt één band van de equalizer van een zone.",
+      "fields": {
+        "band": {
+          "name": "Band",
+          "description": "Het nummer van de band, geteld vanaf 1."
+        },
+        "freq": {
+          "name": "Frequentie",
+          "description": "De midden- of hoekfrequentie in Hz."
+        },
+        "gain": {
+          "name": "Versterking",
+          "description": "De versterking in dB."
+        },
+        "q": {
+          "name": "Q",
+          "description": "De kwaliteitsfactor."
+        },
+        "type": {
+          "name": "Type",
+          "description": "De filtervorm: low_shelf, high_shelf, peaking, low_pass of high_pass."
+        }
+      }
     }
   },
   "entity": {
@@ -316,6 +356,30 @@
       },
       "presence_control": {
         "name": "Aanwezigheidsbesturing"
+      }
+    },
+    "button": {
+      "next_playlist": {
+        "name": "Volgende afspeellijst"
+      },
+      "previous_playlist": {
+        "name": "Vorige afspeellijst"
+      }
+    },
+    "event": {
+      "playback_error": {
+        "name": "Afspeelfout"
+      }
+    },
+    "sensor": {
+      "source": {
+        "name": "Bron"
+      },
+      "bitrate": {
+        "name": "Bitrate"
+      },
+      "content_type": {
+        "name": "Inhoudstype"
       }
     }
   }
