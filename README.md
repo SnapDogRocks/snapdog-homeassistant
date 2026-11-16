@@ -49,13 +49,18 @@ and both give you the same code.
 
 ### With HACS (recommended)
 
-1. In HACS, open the menu at the top right and choose **Custom repositories**.
-2. Enter `https://github.com/SnapDogRocks/snapdog-homeassistant`, choose the type
-   **Integration** and select **Add**.
-3. Search for **SnapDog** in HACS, open it and select **Download**.
-4. Restart Home Assistant.
+[![Open your Home Assistant instance and open this repository in the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SnapDogRocks&repository=snapdog-homeassistant&category=integration)
+
+1. Select the button above. It opens HACS on your Home Assistant and offers this repository.
+   Confirm that HACS adds it as an **Integration**.
+2. Select **Download** on the SnapDog page in HACS.
+3. Restart Home Assistant.
 
 HACS installs from the GitHub releases and shows you updates.
+
+Without the button, open the menu at the top right of HACS and choose **Custom repositories**,
+enter `https://github.com/SnapDogRocks/snapdog-homeassistant`, choose the type **Integration**
+and select **Add**. Then search for **SnapDog**, select **Download** and restart.
 
 ### By hand
 
