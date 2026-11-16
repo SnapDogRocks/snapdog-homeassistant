@@ -13,16 +13,15 @@ from homeassistant.helpers import entity_registry as er
 from pysnapdog import SnapDogConnectionError, ZoneEqChanged, ZonePresenceChanged
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from .conftest import SERVER_ID, make_eq, make_zone
+from .conftest import make_eq, make_zone
 from .test_media_player import setup
 
-PRESENCE = "binary_sensor.ground_floor_presence"
 TIMER = "binary_sensor.ground_floor_presence_timer"
 CONTROL = "switch.ground_floor_presence_control"
 EQ = "switch.ground_floor_equalizer"
 PRESET = "select.ground_floor_eq_preset"
 TIMEOUT = "number.ground_floor_presence_timeout"
-ENTITIES = (PRESENCE, TIMER, CONTROL, EQ, PRESET, TIMEOUT)
+ENTITIES = (TIMER, CONTROL, EQ, PRESET, TIMEOUT)
 
 
 async def call(hass: HomeAssistant, domain: str, service: str, entity: str, **data: object) -> None:
@@ -42,7 +41,9 @@ async def test_a_zone_has_the_presence_and_equalizer_entities(
     registry = er.async_get(hass)
     for entity in ENTITIES:
         assert registry.async_get(entity) is not None, entity
-    assert registry.async_get(PRESENCE).unique_id == f"{SERVER_ID}_zone_1_presence"  # type: ignore[union-attr]
+    assert (
+        registry.async_get("binary_sensor.ground_floor_presence") is None
+    )  # SnapDog measures none
     assert registry.async_get(TIMER).entity_category == "diagnostic"  # type: ignore[union-attr]
     for entity in (CONTROL, EQ, PRESET, TIMEOUT):
         assert registry.async_get(entity).entity_category == "config", entity  # type: ignore[union-attr]
@@ -55,7 +56,6 @@ async def test_the_states_come_from_the_server(
         make_zone(presence=True, presence_enabled=True, presence_timer_active=True)
     ]
     await setup(hass, entry, listener)
-    assert state(hass, PRESENCE) == STATE_ON
     assert state(hass, TIMER) == STATE_ON
     assert state(hass, CONTROL) == STATE_ON
     assert state(hass, EQ) == STATE_ON
@@ -63,15 +63,6 @@ async def test_the_states_come_from_the_server(
     assert state(hass, TIMEOUT) == "900"
     assert hass.states.get(PRESET).attributes["options"] == ["Flat", "Bass"]  # type: ignore[union-attr]
     assert hass.states.get(TIMEOUT).attributes["unit_of_measurement"] == "s"  # type: ignore[union-attr]
-
-
-async def test_presence_is_a_sensor_and_cannot_be_written(
-    hass: HomeAssistant, entry: MockConfigEntry, api: MagicMock, listener: MagicMock
-) -> None:
-    """Reporting presence starts the playback of the zone, so Home Assistant only reads it."""
-    await setup(hass, entry, listener)
-    assert PRESENCE.startswith("binary_sensor.")
-    api.set_zone_presence.assert_not_called()
 
 
 async def test_presence_follows_the_event_of_the_server(
@@ -82,7 +73,6 @@ async def test_presence_follows_the_event_of_the_server(
         ZonePresenceChanged(zone=1, presence=True, enabled=True, timer_active=True)
     )
     await hass.async_block_till_done()
-    assert state(hass, PRESENCE) == STATE_ON
     assert state(hass, TIMER) == STATE_ON
     assert state(hass, CONTROL) == STATE_ON
 
@@ -95,7 +85,7 @@ async def test_a_presence_event_about_another_zone_is_ignored(
         ZonePresenceChanged(zone=9, presence=True, enabled=True, timer_active=True)
     )
     await hass.async_block_till_done()
-    assert state(hass, PRESENCE) == STATE_OFF
+    assert state(hass, TIMER) == STATE_OFF
 
 
 async def test_the_presence_automation_is_switched_on_the_server(
@@ -182,7 +172,7 @@ async def test_a_zone_that_does_not_answer_stays_unknown(
     assert state(hass, EQ) == STATE_UNAVAILABLE
     assert state(hass, PRESET) == STATE_UNAVAILABLE
     assert state(hass, TIMEOUT) == "unknown"
-    assert state(hass, PRESENCE) == STATE_OFF
+    assert state(hass, TIMER) == STATE_OFF
 
 
 async def test_a_failed_request_is_an_error_and_changes_nothing(
@@ -216,6 +206,6 @@ async def test_a_zone_added_later_gets_its_entities(
     api.zones.return_value = [make_zone(), make_zone(index=2, name="Garden")]
     await listener.call_args.kwargs["on_connected"]()
     await hass.async_block_till_done()
-    assert state(hass, "binary_sensor.garden_presence") == STATE_OFF
+    assert state(hass, "binary_sensor.garden_presence_timer") == STATE_OFF
     assert state(hass, "switch.garden_equalizer") == STATE_ON
     assert state(hass, "number.garden_presence_timeout") == "900"

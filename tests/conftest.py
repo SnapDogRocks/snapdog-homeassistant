@@ -267,6 +267,7 @@ def api() -> Generator[MagicMock]:
         client.set_zone_eq = AsyncMock(side_effect=lambda _index, config: config)
         client.set_zone_eq_band = AsyncMock(return_value=make_eq())
         client.apply_zone_eq_preset = AsyncMock(return_value=make_eq(preset="Bass"))
+        client.set_zone_presence = AsyncMock(return_value=None)
         client.set_zone_presence_enabled = AsyncMock(return_value=None)
         client.set_zone_presence_timeout = AsyncMock(return_value=None)
         client.set_client_latency = AsyncMock(side_effect=lambda _index, value: value)

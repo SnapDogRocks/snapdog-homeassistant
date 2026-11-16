@@ -318,9 +318,6 @@
       "connected": {
         "name": "Connected"
       },
-      "presence": {
-        "name": "Presence"
-      },
       "presence_timer": {
         "name": "Presence timer"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Server"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Presence sensor",
+        "description": "Zone {zone} ({position}): choose the sensor whose presence SnapDog reacts to. Leave it empty for none.",
+        "data": {
+          "sensor": "Presence sensor"
+        },
+        "data_description": {
+          "sensor": "Home Assistant reports this sensor's state to the zone. When it turns on, the zone starts playing, as it does for a detector wired to the server. A server restart is followed by the current state."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "The integration is not loaded. Try again once it is.",
+      "no_zones": "The server has no zones yet."
     }
   }
 }

@@ -318,9 +318,6 @@
       "connected": {
         "name": "Verbonden"
       },
-      "presence": {
-        "name": "Aanwezigheid"
-      },
       "presence_timer": {
         "name": "Aanwezigheidstimer"
       }
@@ -401,6 +398,24 @@
       "server": {
         "name": "Server"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "zone": {
+        "title": "Aanwezigheidssensor",
+        "description": "Zone {zone} ({position}): kies de sensor waarop SnapDog reageert. Laat leeg voor geen.",
+        "data": {
+          "sensor": "Aanwezigheidssensor"
+        },
+        "data_description": {
+          "sensor": "Home Assistant geeft de status van deze sensor door aan de zone. Als hij aangaat, begint de zone te spelen, net als bij een melder op de server. Na een herstart van de server wordt de actuele status nagestuurd."
+        }
+      }
+    },
+    "abort": {
+      "not_loaded": "De integratie is niet geladen. Probeer het opnieuw zodra ze draait.",
+      "no_zones": "De server heeft nog geen zones."
     }
   }
 }
