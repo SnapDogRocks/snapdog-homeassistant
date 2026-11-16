@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.5.0...v0.6.0) (2026-11-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **presence:** binary_sensor `<zone>_presence` no longer exists.
+
+### Features
+
+* **presence:** choose a Home Assistant presence sensor per zone ([#35](https://github.com/SnapDogRocks/snapdog-homeassistant/issues/35)) ([e21bc65](https://github.com/SnapDogRocks/snapdog-homeassistant/commit/e21bc6556409b8906305c78e1a495d034df9e045))
+
 ## [0.5.0](https://github.com/SnapDogRocks/snapdog-homeassistant/compare/v0.4.0...v0.5.0) (2026-11-15)
 
 
